@@ -71,10 +71,6 @@ class SASISCommandInterface:
         self.graph_tab.onDraw(x=[2, 8, 3, -5, 7, 5, 16], y=[0, 4, 8, 2, 1, 8, 9], \
                               lx='X Label 2', ly='Y Label 2', \
                               c='r', s='dashed')
-        #self.graph_tab.on_draw_graph2(xdata=[2, 8, 3, -5, 7, 5, 16], ydata=[0, 4, 8, 2, 1, 8, 9], \
-        #                             xlabel='X Label 3', ylabel='Y Label 3', \
-        #                             color='g', style='dashed')
-        #self.graph_tab.add_grah_to_frame(col=1, row=0, xpad=8, ypad=8)
         self.graph_tab.on_create_labelframe('Graph Down', 1, 1, 8, 10, 'SE')
         self.graph_tab.add_rbtn('graph south east', 1, 0, 0, 8, 8, tk_var=self.var_down)
         self.wtab.pack(expand=1, fill='both')

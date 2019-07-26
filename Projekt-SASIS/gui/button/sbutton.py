@@ -149,13 +149,6 @@ class SASISActionButton:
         except KeyError as kerror:
             print('Variable nicht erkannt: --> ', kerror)
 
-    # def on_update_status(self, status):
-    #     if status == 'OFF':
-    #         status = 'ON'
-    #         return status
-    #     else:
-    #         return status
-
     def on_reset_action(self):
         """
 

@@ -15,7 +15,6 @@ class SASISRadioButton:
         :param name: Name des RadioButton
         :param tk_int_var: ein Int-Variable (Object) der Tk-Klasse.
         :param rad_val: Werte des RadioButtons, wird fuer die Aktierung durch die tk_int_var verglichen
-        :param master_lf: Das Element wird einer LabelFrame zugeordnet
         """
         self.master_lf = None # wird spaeter implementiert
         self.rdio = Radiobutton(master=root, text=name, variable=tk_int_var,\

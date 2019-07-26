@@ -99,11 +99,9 @@ class ApplianceDeviceControl:
     def add_btn(self, room, status, col, row, colpad, rowpad):  # enlever le status
         btn = sButton(root=self.panel_control_lf,room_name=room, name_btn=status,\
                       master_lf=self.house_plan_lf)
-        #btn.btn.configure(command=lambda: btn.reload_plan)
-        # self.test_btn.on_create_btn()
-        #btn.btn['command'] = lambda: self.reload_plan(btn)
+
         btn.set_btn_pos(col, row, colpad, rowpad)
-        # btn.set_btn_action(self.reload_plan(btn))
+
         return btn.get_btn()
 
     def update_plan(self):
@@ -130,5 +128,3 @@ class ApplianceDeviceControl:
                 btn.btn['text'] = 'ON'
             else:
                 btn.btn['text'] = 'OFF'
-
-#######  a revoir ici #########

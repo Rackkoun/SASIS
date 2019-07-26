@@ -50,17 +50,6 @@ class MonitorringControl:
 
         self.graph_up = sgraph(root=self.tmp)
 
-    # def create_new_intern_label(self, label_name, col, row, colpad, rowpad, pos):
-    #     mlab = LabelModel(label_name)
-    #         mlab.obj = Label(master=self.panel_control_lf, \
-    #                          text=mlab.name)
-    #         mlab.obj.grid(column=col, row=row, \
-    #                       padx=colpad, pady=rowpad, sticky=pos)
-    #
-    #         self.intern_lbls[mlab] = mlab.obj
-    #
-    #     return self.intern_lbls
-
     def add_rbtn(self, name, btn_value, col, row, colpad, rowpad, tk_var=None):  # enlever le status
         """
         Erzeugung eines RadioButtons und Plazierung des Buttons in einem Frame
@@ -76,40 +65,9 @@ class MonitorringControl:
         r_btn = rsButton(root=self.lf, name=name, rad_val=btn_value, tk_int_var=tk_var)
         r_btn.set_btn_pos(col, row, colpad, rowpad)
         self.rgrp.append(r_btn)
-        # btn = sButton(root=self.panel_control_lf, room_name=room, name_btn=status, \
-        #             master_lf=self.house_plan_lf)
-        # btn.btn.configure(command=lambda: btn.reload_plan)
-        # self.test_btn.on_create_btn()
-        # btn.btn['command'] = lambda: self.reload_plan(btn)
-        # btn.set_btn_pos(col, row, colpad, rowpad)
-        # btn.set_btn_action(self.reload_plan(btn))
-        # return btn.get_btn()
 
     def onDraw(self, x, y, lx, ly, c, s):
         self.graph_up.on_draw_line(x=x, y=y, xlab=lx, ylab=ly, lincolor=c, linstyle=s)
-
-    '''def on_draw_graph(self, xdata, ydata, xlabel, ylabel, color, style):
-        """ Darstellung einer Gerade. Siehe Methode draw_line in dem Module normal.py"""
-        #graph = sgraph(root=self.lf)
-
-        self.graph_up.draw_gline(xdata=xdata, ydata=ydata, xlab=xlabel, ylab=ylabel, lcolor=color, lstyle=style)
-
-    #  wird geloescht . . .
-    def on_draw_graph1(self, xdata, ydata, xlabel, ylabel, color, style):
-        #graph = sgraph(root=self.lf)
-
-        self.graph_up.draw_gline1(xdata=xdata, ydata=ydata, xlab=xlabel, ylab=ylabel, lcolor=color, lstyle=style)
-
-    #  wird geloescht . . .
-    def on_draw_graph2(self, xdata, ydata, xlabel, ylabel, color, style):
-        #graph = sgraph(root=self.lf)
-
-        self.graph_up.draw_gline2(xdata=xdata, ydata=ydata, xlab=xlabel, ylab=ylabel, lcolor=color, lstyle=style)
-
-
-    def add_grah_to_frame(self, col, row, xpad, ypad):
-        """ Hinzufuegen einer Darstellung in einem TKinter-Frame. siehe MEthode add_to_frame in dem Module normal.py"""
-        self.graph_up.add_to_frame(col, row, xpad, ypad)'''
 
     def get_panel(self):
         return self.master
