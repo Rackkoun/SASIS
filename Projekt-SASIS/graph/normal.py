@@ -8,8 +8,7 @@ https://datatofish.com/matplotlib-charts-tkinter-gui/
 """
 from tkinter.ttk import Frame
 import matplotlib.pyplot as plt
-# from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class SGraphTK:
@@ -21,21 +20,16 @@ class SGraphTK:
     mit irgendwelchem Machinellen Lernen Algorithmus trainiert sind
     """
 
-    def __init__(self, sfig=None, root=None):
+    def __init__(self, root=None):
         """
-        :param sfig: Vordergroundfarbe fuer den Bereich des zu darstellenden Graphen
+        Die Klasse besitzt ein Hauptframe für graphische Ansichte (gmaster) und ein inneres Frame (intern_frame_up),
+        wobei, das innere Frame für die Visualisierung nicht trainierten Daten zuständig ist.
         :param root: Frame, in welchem der Graph geplot wird
         """
-        self.gmaster = Frame(master=root)
-        self.intern_frame_up = Frame(master=self.gmaster)  # Jeder Graph in eigenem Frame plazieren
-        self.intern_frame_up.pack(side='top')
-        self.canvas = None
-        self.toolbar = None
-        self.fig = None  # Figure(figsize=(4.4, 2.3), facecolor=sfig, dpi=80, constrained_layout=True)
-        # self.ax = None
+        self.gmaster = Frame(master=root)                  # Hauptframe: wird von einer anderen Klasse (Frame) bestimmt
+        self.intern_frame = Frame(master=self.gmaster)     # innere Frame für einzelnen Graphen
+        self.intern_frame.pack(side='top')
         self.gmaster.pack()
-        # self.master = root
-        self.ncol = 4  # Anzahl von Darstellungen in waargerachten Richtung (Spalten)
 
     def on_draw_line(self, x, y, xlab, ylab, lincolor, linstyle):
         """
@@ -56,7 +50,7 @@ class SGraphTK:
         ax.set_xlabel(xlab)
         ax.set_ylabel(ylab)
 
-        canvas = FigureCanvasTkAgg(fig, self.intern_frame_up)
+        canvas = FigureCanvasTkAgg(fig, self.intern_frame)
         canvas.get_tk_widget().pack(side='left', padx=8)
 
         self.gmaster.update()
