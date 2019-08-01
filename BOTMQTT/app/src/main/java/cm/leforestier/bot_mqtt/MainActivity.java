@@ -21,11 +21,11 @@ import java.io.UnsupportedEncodingException;
 
 public class MainActivity extends AppCompatActivity {
 // MPAndroidChart Documentation: https://weeklycoding.com/mpandroidchart-documentation/
-    final String TAG = "Yo-Main";
+    final String TAG = MainActivity.class.getSimpleName();
     String topicMsg = "strom/verbrauch";
     byte[] encodeMsg = new byte[0];
 
-    String server = "tcp://192.168.178.28:1883";
+    String server = "tcp://192.168.178.28:1883"; // wird geaendert
     String clientID = "Andoid-RUPH";
     MqttClient mqttClient;
     MqttAndroidClient androidClient;
