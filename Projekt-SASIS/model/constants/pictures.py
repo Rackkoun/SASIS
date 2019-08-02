@@ -3,16 +3,15 @@ Created on 21.07.2019 at 14:42
 @author: Ruphus
 Diese Klasse erhaelt nur Konstantenwerte, welcher Namen seinen entsprechenden Plan auf dem Bild zugeordnet sind.
 """
-from typing import Set, Any, Union
 
 
 class HousePlan:
-
 
     def __init__(self):
         """
         Beim Erstellen eines Housplan-Objekt, wird das Woerterbuch geladen
         """
+        self.load_plan = {}
         self.on_load()
 
     def on_load(self):
@@ -31,7 +30,8 @@ class HousePlan:
             'WZ + K + KP4 + WM4': 'wohnung-architektur-wohnzim-und-kueche-wm4-kp4-ein.png',
             'ALLES EIN': 'wohnung-architektur-alle-lichter-ein.png',
             'ALLES AUS': 'wohnung-architektur-alles-aus.png',
-            'NICHST':'wohnung-architektur.png'
+            'NICHST': 'wohnung-architektur.png',
+            'PLUS': 'wohnung-architektur-alle-lichter-wasser-ein.png'
         }
 
     def get_plan(self):
