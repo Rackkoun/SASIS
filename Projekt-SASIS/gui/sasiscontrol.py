@@ -66,11 +66,15 @@ class SASISCommandInterface:
         self.graph_tab.on_create_labelframe('Graph Down', 1, 1, 8, 10, 'SE')
         self.graph_tab.add_rbtn('graph south east', 1, 0, 0, 8, 8, tk_var=self.var_down)
         self.wtab.pack(expand=1, fill='both')
+
+        #self.elect_panel_tab.show_all_tk_var()
         pass
+
 
     def lauchApp(self):
         """
         Endlos-Starten des Programms
         :return:
         """
+
         self.wmain.mainloop()

@@ -2,6 +2,7 @@ import os.path
 from tkinter import IntVar
 import time
 from threading import Thread
+from queue import Queue
 from tkinter.ttk import Frame, LabelFrame, Label
 from PIL import Image, ImageTk
 from gui.button.sbutton import SASISActionButton as sButton
@@ -31,8 +32,13 @@ class ApplianceDeviceControl:
         self.filepath = './res/img/'
         self.plan = HousePlan().load_plan
 
+        self.thread_dict = {}
+        self.queue = Queue()
         self.dict_btn = {}
         self.dict_tk_var = {}
+        self.store = {}
+
+        #self.dev_control_panel.update()
         pass
 
     def get_panel(self):
@@ -48,12 +54,13 @@ class ApplianceDeviceControl:
         for a, b in zip(self.dict_btn.keys(), self.dict_btn.values()):
             print("room name: ", a, "--> State: ", b['state'])
 
-        self.show_all_tk_var()
+        #self.show_all_tk_var()
 
     def add_btn(self, col, row, px, py, room_name):
         btn = sButton(root=self.panel_control_lf).get_btn()
         self.set_btn_command(room_name=room_name, btn=btn)
         btn.grid(column=col, row=row, padx=px, pady=py)
+
         tk_var = IntVar()
         self.dict_btn[room_name] = btn
         self.dict_tk_var[room_name] = tk_var
@@ -144,6 +151,7 @@ class ApplianceDeviceControl:
             print(self.dict_btn['WZ']['state'])
             self.on_updated_action('WZ')
             self.dict_btn['WZ'].bind('<Button-1>', self.on_thread_00(self.dict_btn['WZ']['state']))
+
         else:
             self.dict_btn['WZ']['text'] = 'OFF'
             self.dict_btn['WZ']['state'] = 'OFF'
@@ -161,6 +169,17 @@ class ApplianceDeviceControl:
                 print('Fehler beim Laden des Bildes: -->', ierror)
             except KeyError as kerror:
                 print('Variable nicht erkannt: --> ', kerror)
+            print("STATE OF THR IN DICT: ", self.thread_dict['WZ'].is_alive())
+            if self.thread_dict['WZ'].is_alive():
+                self.thread_dict['WZ'].join(.2)
+                print("STATS OF DICT NOW: ", self.thread_dict['WZ'].is_alive())
+                self.store['WZ'] = self.dict_tk_var['WZ'].get()
+                print("STORED VALUE: ", self.store['WZ'])
+                print("REINIT TKVAT: ")
+                self.dict_tk_var['WZ'].set(0)
+                print("TK VAR REINIT TO: ", self.dict_tk_var['WZ'].get())
+                print("STATS OF DICT NOW 2: ", self.thread_dict['WZ'].is_alive())
+
 
     def on_updated_01(self):
         if self.dict_btn['SZ']['text'] == 'OFF':
@@ -173,6 +192,7 @@ class ApplianceDeviceControl:
             self.dict_btn['SZ']['text'] = 'OFF'
             self.dict_btn['SZ']['state'] = 'OFF'
             print("Last values of Va1 = ", self.dict_tk_var['SZ'].get())
+
             try:
                 img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
                 img.rotate(90)
@@ -186,6 +206,7 @@ class ApplianceDeviceControl:
                 print('Fehler beim Laden des Bildes: -->', ierror)
             except KeyError as kerror:
                 print('Variable nicht erkannt: --> ', kerror)
+
 
     def on_updated_02(self):
         if self.dict_btn['WC']['text'] == 'OFF':
@@ -422,27 +443,52 @@ class ApplianceDeviceControl:
             except KeyError as kerror:
                 print('Variable nicht erkannt: --> ', kerror)
 
+    ## Multi-Threading: https://stackoverflow.com/questions/6893968/how-to-get-the-return-value-from-a-thread-in-python
+    ## https://stackoverflow.com/questions/41711357/python-how-to-multi-thread-a-function-that-returns-multiple-values
+    ## https://stackoverflow.com/questions/11986005/better-way-to-get-results-from-multiple-threads
+    ## Thread: https://nitratine.net/blog/post/python-threading-basics/
     def on_inc00(self, state):
         while self.dict_btn['WZ']['state'] == state == 'ON':
-            self.dict_tk_var['WZ'].set(self.dict_tk_var['WZ'].get() + 1)
+            self.dict_tk_var['WZ'].set(self.dict_tk_var['WZ'].get() + 1) # für die Inkrementierung
+
+            self.queue.put(self.dict_tk_var['WZ'].get()) # Werte in der Warteschlage hinterlegen
 
             print('WZ', ":  values - - > ", self.dict_tk_var['WZ'].get())
+            print("value in Q0: ", self.queue.get()) # für die IPC
+            #self.store['WZ'] = self.queue.get() # blockiert den Thread
+            #print("Value in store for WZ: ", self.store['WZ'])
             time.sleep(2)
+            #self.dict_btn['WZ'].after(10, lambda s=state: self.on_inc00(s))
 
     def on_thread_00(self, state):
         t00 = Thread(target=self.on_inc00, args=(state,))
+        #t00.setDaemon(True) # running in background
+        self.thread_dict['WZ'] = t00  # Thread in der Liste hinzufügen
+        print("Thread 0 (", t00.getName(), "): added in List- - -> State: ", t00.isAlive())
+        print("Thread_dict 0 (", self.thread_dict['WZ'].getName(), "): added in List- - -> State: ", self.thread_dict['WZ'].isAlive())
         t00.start()
+
+
 
     def on_inc01(self, state):
         while self.dict_btn['SZ']['state'] == state == 'ON':
             self.dict_tk_var['SZ'].set(self.dict_tk_var['SZ'].get() + 1)
 
+            self.queue.put(self.dict_tk_var['SZ'].get())
+
             print('SZ', ":  values - - > ", self.dict_tk_var['SZ'].get())
+            print("Value in Q1: ", self.queue.get())
+            #self.store['SZ'] = self.queue.get()
+            #print("Value in store for SZ: ", self.store['SZ'])
             time.sleep(2)
 
     def on_thread_01(self, state):
         t01 = Thread(target=self.on_inc01, args=(state,))
+        #t01.setDaemon(True)
+        self.thread_lst.append(t01)
+        print("Thread 0 (", t01.getName(), "): added in List; - - - > Alive...: ", t01.is_alive())
         t01.start()
+
 
     def on_inc02(self, state):
         while self.dict_btn['WC']['state'] == state == 'ON':
@@ -543,6 +589,5 @@ class ApplianceDeviceControl:
         t10 = Thread(target=self.on_inc10, args=(state,))
         t10.start()
 
-    def show_all_tk_var(self):
-        for a, b in zip(self.dict_btn.values(), self.dict_tk_var.values()):
-            print('Var: ', b.get(), ' Btn State: ', a['state'])
+    def get_all_tk_value(self):
+        pass
