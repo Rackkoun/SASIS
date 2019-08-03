@@ -28,10 +28,9 @@ class HousePlan:
             'WZ + K + KP4': 'wohnung-architektur-wohnzim-und-kueche-kp4-ein.png',
             'WZ + K + WM4': 'wohnung-architektur-wohnzim-und-kueche-wm4-ein.png',
             'WZ + K + KP4 + WM4': 'wohnung-architektur-wohnzim-und-kueche-wm4-kp4-ein.png',
-            'ALLES EIN': 'wohnung-architektur-alle-lichter-ein.png',
-            'ALLES AUS': 'wohnung-architektur-alles-aus.png',
-            'NICHST': 'wohnung-architektur.png',
-            'PLUS': 'wohnung-architektur-alle-lichter-wasser-ein.png'
+            'ALLE LICHTER EIN': 'wohnung-architektur-alle-lichter-ein.png',
+            'ALLE LICHTER AUS': 'wohnung-architektur-alles-aus.png',
+            'NICHST': 'wohnung-architektur.png'
         }
 
     def get_plan(self):
