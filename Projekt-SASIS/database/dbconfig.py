@@ -4,7 +4,7 @@
     sources: https://www.andreafiori.net/posts/connecting-to-a-postgresql-database-with-python
              https://www.dev2qa.com/how-to-connect-postgresql-server-use-configuration-file-in-python/
 """
-import os.path
+
 from configparser import ConfigParser
 
 
@@ -13,7 +13,6 @@ class DBConfiguration:
         Skript-Datei für die Initialisierung der Verbindung zu der Datenbank
         @:var: file_path: Pfad bis zu dem Konfig-Datei
     """
-    file_path = '../res/config/'  # zwei Punkt erforderlich für die Sichtbarkeit des Ordners
 
     def __init__(self):
         """
@@ -21,10 +20,9 @@ class DBConfiguration:
                 damit eine Verbindung zu der DB-Server erstellt.
         """
         self.parsefile = ConfigParser()
-        self.parsefile.read(os.path.join(DBConfiguration.file_path, 'dbconfig.ini'))
         pass
 
-    def on_parsing_file(self):
+    def on_parsing_file(self, file_name):
         """
             Die Methode wird die Informationen in der ini-Datei zu einem Python-Wörterbuch umwandeln
             Die Hinweis zwische eckigen Klammern in der Datei dienen zur Erstellung von
@@ -34,6 +32,8 @@ class DBConfiguration:
         :return: dict_db
         """
         dict_db = {}
+
+        self.parsefile.read(file_name)
         if self.parsefile.has_section('Verbrauch'):
             parameters = self.parsefile.items('Verbrauch')
             for param in parameters:

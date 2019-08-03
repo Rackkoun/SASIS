@@ -9,7 +9,10 @@ from PIL import Image, ImageTk
 from gui.button.sbutton import SASISActionButton as sButton
 from model.elementdict.labelmodel import LabelModel
 from model.constants.pictures import HousePlan
+from database.dbconfig import DBConfiguration
+from database.postgresdb import PostgreSQLDatabase as server
 
+from configparser import ConfigParser
 """@author: Ruphus
    Created on 20.07.2019
    source: Threading: https://automatetheboringstuff.com/chapter15/
@@ -30,7 +33,8 @@ class ApplianceDeviceControl:
         self.panel_control_lf = None
         self.house_plan_lf = None
         self.house_lbl = None
-        self.filepath = './res/img/'
+        self.imgpath = './res/img/'
+        self.config_file = './res/config/dbconfig.ini'
         self.plan = HousePlan().load_plan
 
         self.thread_dict = {}
@@ -38,7 +42,9 @@ class ApplianceDeviceControl:
         self.dict_btn = {}
         self.dict_tk_var = {}
 
-        # self.dev_control_panel.update()
+        #self.login_info = DBConfiguration()
+        self.connection = server()
+        #print("login info: ", self.login_info)
         pass
 
     def get_panel(self):
@@ -79,7 +85,7 @@ class ApplianceDeviceControl:
             self.house_plan_lf.grid(column=col, row=row, padx=colpad, pady=rowpad, sticky=pos)
             img = None
             try:
-                img = Image.open(os.path.join(self.filepath, str(self.plan[pic])))
+                img = Image.open(os.path.join(self.imgpath, str(self.plan[pic])))
                 print(str(self.plan[pic]))
             except IOError:
                 pass
@@ -145,7 +151,7 @@ class ApplianceDeviceControl:
         :return:
         """
         try:
-            img = Image.open(os.path.join(self.filepath, self.plan[btn_obj_name]))
+            img = Image.open(os.path.join(self.imgpath, self.plan[btn_obj_name]))
 
             img.rotate(90)
             img.thumbnail((884, 400), Image.ANTIALIAS)
@@ -174,7 +180,7 @@ class ApplianceDeviceControl:
             print("Last values of Va-00 = ", self.dict_tk_var['WZ'].get())  # prüfe der gepeicherte Wert in der TK-Var
 
             try:  # setzte das Bild auch auf dem ersten Zustand zurück
-                img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
+                img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
                 img.thumbnail((884, 400), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(image=img)
@@ -193,11 +199,19 @@ class ApplianceDeviceControl:
                 print("STATS OF DICT NOW: ", self.thread_dict['WZ'].is_alive())
                 during = self.dict_tk_var['WZ'].get()  # der letzte Wert in der TK-Var in temporärer Var speichern
                 print("STORED VALUE: ", during)
+
+                # speichere direkt in der DB
+                during = np.round((during * 2.), decimals=2)
+                connected = self.connection.in_connecting(self.config_file)
+                df = self.connection.write_new_values(during, connected)
+                print("df in TKINTER ")
+                print(df)
+
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['WZ'].set(0)  # der TK-Var auf 0 zurücksetzen
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WZ'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WZ'].is_alive())
-                print("VERBRAUCH IN WZ: ", np.round((during * 2.), decimals=2),
+                print("VERBRAUCH IN WZ: ", during ,
                       "watt min")  # der Verbrauch in der DB speichern
 
     def on_updated_01(self):
@@ -213,7 +227,7 @@ class ApplianceDeviceControl:
             print("Last values of Va-01 = ", self.dict_tk_var['SZ'].get())
 
             try:
-                img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
+                img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
                 img.thumbnail((884, 400), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(image=img)
@@ -231,11 +245,18 @@ class ApplianceDeviceControl:
                 print("STATS OF DICT NOW: ", self.thread_dict['SZ'].is_alive())
                 during = self.dict_tk_var['SZ'].get()
                 print("STORED VALUE: ", during)
+
+                during = np.round((during * 1.), decimals=2)
+                connected = self.connection.in_connecting(self.config_file)
+                df = self.connection.write_new_values(during, connected)
+                print("df in TKINTER ")
+                print(df)
+
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['SZ'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['SZ'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['SZ'].is_alive())
-                print("VERBRAUCH IN SZ: ", np.round((during * 1.), decimals=2), "watt min")
+                print("VERBRAUCH IN SZ: ", during, "watt min")
 
     def on_updated_02(self):
         if self.dict_btn['WC']['text'] == 'OFF':
@@ -249,7 +270,7 @@ class ApplianceDeviceControl:
             self.dict_btn['WC']['state'] = 'OFF'
             print("Last values of Va-02 = ", self.dict_tk_var['WC'].get())
             try:
-                img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
+                img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
                 img.thumbnail((884, 400), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
@@ -268,11 +289,18 @@ class ApplianceDeviceControl:
                 print("STATS OF DICT NOW: ", self.thread_dict['WC'].is_alive())
                 during = self.dict_tk_var['WC'].get()
                 print("STORED VALUE: ", during)
+
+                during = np.round((during * 1.), decimals=2)
+                connected = self.connection.in_connecting(self.config_file)
+                df = self.connection.write_new_values(during, connected)
+                print("df in TKINTER ")
+                print(df)
+
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['WC'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WC'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WC'].is_alive())
-                print("VERBRAUCH IN WC: ", np.round((during * 1.), decimals=2), "watt min")
+                print("VERBRAUCH IN WC: ", during, "watt min")
 
     def on_updated_03(self):
         if self.dict_btn['DUSCHE']['text'] == 'OFF':
@@ -286,7 +314,7 @@ class ApplianceDeviceControl:
             self.dict_btn['DUSCHE']['state'] = 'OFF'
             print("Last values of Va-03 = ", self.dict_tk_var['DUSCHE'].get())
             try:
-                img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
+                img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
                 img.thumbnail((884, 400), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
@@ -305,11 +333,18 @@ class ApplianceDeviceControl:
                 print("STATS OF DICT NOW: ", self.thread_dict['DUSCHE'].is_alive())
                 during = self.dict_tk_var['DUSCHE'].get()
                 print("STORED VALUE: ", during)
+
+                during = np.round((during * 1.), decimals=2)
+                connected = self.connection.in_connecting(self.config_file)
+                df = self.connection.write_new_values(during, connected)
+                print("df in TKINTER ")
+                print(df)
+
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['DUSCHE'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['DUSCHE'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['DUSCHE'].is_alive())
-                print("VERBRAUCH IN DUSCHE: ", np.round((during * 1.), decimals=2), "watt min")
+                print("VERBRAUCH IN DUSCHE: ", during, "watt min")
 
     def on_updated_04(self):
         if self.dict_btn['WZ + K']['text'] == 'OFF':
@@ -323,7 +358,7 @@ class ApplianceDeviceControl:
             self.dict_btn['WZ + K']['state'] = 'OFF'
             print("Last values of Va-04 = ", self.dict_tk_var['WZ + K'].get())
             try:
-                img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
+                img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
                 img.thumbnail((884, 400), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
@@ -342,11 +377,18 @@ class ApplianceDeviceControl:
                 print("STATS OF DICT NOW: ", self.thread_dict['WZ + K'].is_alive())
                 during = self.dict_tk_var['WZ + K'].get()
                 print("STORED VALUE: ", during)
+
+                during = np.round((during * 2.), decimals=2)
+                connected = self.connection.in_connecting(self.config_file)
+                df = self.connection.write_new_values(during, connected)
+                print("df in TKINTER ")
+                print(df)
+
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['WZ + K'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WZ + K'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WZ + K'].is_alive())
-                print("VERBRAUCH IN WZ + K: ", np.round((during * 2.), decimals=2), "watt min")
+                print("VERBRAUCH IN WZ + K: ", during, "watt min")
 
     def on_updated_05(self):
         if self.dict_btn['WZ + K + KP4']['text'] == 'OFF':
@@ -360,7 +402,7 @@ class ApplianceDeviceControl:
             self.dict_btn['WZ + K + KP4']['state'] = 'OFF'
             print("Last values of Va-05 = ", self.dict_tk_var['WZ + K + KP4'].get())
             try:
-                img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
+                img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
                 img.thumbnail((884, 400), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
@@ -379,12 +421,18 @@ class ApplianceDeviceControl:
                 print("STATS OF DICT NOW: ", self.thread_dict['WZ + K + KP4'].is_alive())
                 during = self.dict_tk_var['WZ + K + KP4'].get()
                 print("STORED VALUE: ", during)
+
+                during = np.round((during * 68.67), decimals=2)
+                connected = self.connection.in_connecting(self.config_file)
+                df = self.connection.write_new_values(during, connected)
+                print("df in TKINTER ")
+                print(df)
+
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['WZ + K + KP4'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WZ + K + KP4'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WZ + K + KP4'].is_alive())
-                print("VERBRAUCH IN WZ + K + KP4: ", np.round((during * 68.67), decimals=2),
-                      "watt min")  # 1+1+66,67 watt min
+                print("VERBRAUCH IN WZ + K + KP4: ", during, "watt min")  # 1+1+66,67 watt min
 
     def on_updated_06(self):
         if self.dict_btn['WZ + K + WM4']['text'] == 'OFF':
@@ -398,7 +446,7 @@ class ApplianceDeviceControl:
             self.dict_btn['WZ + K + WM4']['state'] = 'OFF'
             print("Last values of Va-06 = ", self.dict_tk_var['WZ + K + WM4'].get())
             try:
-                img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
+                img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
                 img.thumbnail((884, 400), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
@@ -417,12 +465,18 @@ class ApplianceDeviceControl:
                 print("STATS OF DICT NOW: ", self.thread_dict['WZ + K + WM4'].is_alive())
                 during = self.dict_tk_var['WZ + K + WM4'].get()
                 print("STORED VALUE: ", during)
+
+                during = np.round((during * 38.67), decimals=2)
+                connected = self.connection.in_connecting(self.config_file)
+                df = self.connection.write_new_values(during, connected)
+                print("df in TKINTER ")
+                print(df)
+
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['WZ + K + WM4'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WZ + K + WM4'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WZ + K + WM4'].is_alive())
-                print("VERBRAUCH IN WZ + K + WM4: ", np.round((during * 38.67), decimals=2),
-                      "watt min")  # 1+1+66,67 watt min
+                print("VERBRAUCH IN WZ + K + WM4: ", during, "watt min")  # 1+1+36,67 watt min
 
     def on_updated_07(self):
         if self.dict_btn['WZ + K + KP4 + WM4']['text'] == 'OFF':
@@ -437,7 +491,7 @@ class ApplianceDeviceControl:
             self.dict_btn['WZ + K + KP4 + WM4']['state'] = 'OFF'
             print("Last values of Va-07 = ", self.dict_tk_var['WZ + K + KP4 + WM4'].get())
             try:
-                img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
+                img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
                 img.thumbnail((884, 400), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
@@ -456,12 +510,18 @@ class ApplianceDeviceControl:
                 print("STATS OF DICT NOW: ", self.thread_dict['WZ + K + KP4 + WM4'].is_alive())
                 during = self.dict_tk_var['WZ + K + KP4 + WM4'].get()
                 print("STORED VALUE: ", during)
+
+                during = np.round((during * 105.34), decimals=2)
+                connected = self.connection.in_connecting(self.config_file)
+                df = self.connection.write_new_values(during, connected)
+                print("df in TKINTER ")
+                print(df)
+
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['WZ + K + KP4 + WM4'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WZ + K + KP4 + WM4'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WZ + K + KP4 + WM4'].is_alive())
-                print("VERBRAUCH IN WZ + K + KP4 + WM4: ", np.round((during * 105.34), decimals=2),
-                      "watt min")  # 1+1+66,67+36,67 watt min
+                print("VERBRAUCH IN WZ + K + KP4 + WM4: ", during, "watt min")  # 1+1+66,67+36,67 watt min
 
     def on_updated_08(self):
         if self.dict_btn['ALLE LICHTER EIN']['text'] == 'OFF':
@@ -476,7 +536,7 @@ class ApplianceDeviceControl:
             self.dict_btn['ALLE LICHTER EIN']['state'] = 'OFF'
             print("Last values of Va-08 = ", self.dict_tk_var['ALLE LICHTER EIN'].get())
             try:
-                img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
+                img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
                 img.thumbnail((884, 400), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
@@ -495,11 +555,18 @@ class ApplianceDeviceControl:
                 print("STATS OF DICT NOW: ", self.thread_dict['ALLE LICHTER EIN'].is_alive())
                 during = self.dict_tk_var['ALLE LICHTER EIN'].get()
                 print("STORED VALUE: ", during)
+
+                during = np.round((during * 9.), decimals=2)
+                connected = self.connection.in_connecting(self.config_file)
+                df = self.connection.write_new_values(during, connected)
+                print("df in TKINTER ")
+                print(df)
+
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['ALLE LICHTER EIN'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['ALLE LICHTER EIN'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['ALLE LICHTER EIN'].is_alive())
-                print("VERBRAUCH IN ALLE LICHTER EIN: ", np.round((during * 9.), decimals=2), "watt min")
+                print("VERBRAUCH IN ALLE LICHTER EIN: ", during, "watt min")
 
     def on_updated_09(self):
         if self.dict_btn['ALLE LICHTER AUS']['text'] == 'OFF':
@@ -514,7 +581,7 @@ class ApplianceDeviceControl:
             self.dict_btn['ALLE LICHTER AUS']['state'] = 'OFF'
             print("Last values of Va-09 = ", self.dict_tk_var['ALLE LICHTER AUS'].get())
             try:
-                img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
+                img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
                 img.thumbnail((884, 400), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
@@ -551,7 +618,7 @@ class ApplianceDeviceControl:
             self.dict_btn['NICHST']['state'] = 'OFF'
             print("Last values of Va-10 = ", self.dict_tk_var['NICHST'].get())
             try:
-                img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
+                img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
                 img.thumbnail((884, 400), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(

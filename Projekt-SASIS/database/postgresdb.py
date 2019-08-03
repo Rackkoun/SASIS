@@ -4,6 +4,7 @@
 
     sources: http://initd.org/psycopg/docs/usage.html
              https://pynative.com/python-postgresql-tutorial/
+             http://www.postgresqltutorial.com/postgresql-python/transaction/
 """
 import psycopg2
 import datetime as dt
@@ -24,17 +25,18 @@ class PostgreSQLDatabase:
         """
         self.connection = None
         self.db_config = DBConfiguration()
-        print("Konfig-Datein erfolgreich geladen")
+        self.path = '../res/config/dbconfig.ini'
         pass
 
-    def in_connecting(self):
+    def in_connecting(self, file_name):
         """
             Bearbeite die Informationen in der Konfig-Datei und erstelle damit
             eine Verbindung
-            :return: Kein:
+            :return: connection:
         """
         try:
-            login_info = self.db_config.on_parsing_file()
+            login_info = self.db_config.on_parsing_file(file_name=file_name)
+            print("Konfig-Datein erfolgreich geladen")
             print('Verbindung zur der Datenbank wird hergestellt ...')
             self.connection = psycopg2.connect(**login_info)
             print('Verbindung ist hersgestellt!')
@@ -42,43 +44,44 @@ class PostgreSQLDatabase:
             print('Verbindung ist nicht hergestellt worden \n', dbfehler)
         return self.connection
 
-
-    def write_new_values(self, strom):
+    def write_new_values(self, strom, connection):
         """
             nehme ein neuer Stromverbrauch als Parameter und schreibe ihn in der Datenbank
+            :param connection:
             :param strom: Neuer Stromverbrauch
             :return: Kein
         """
         query = ''' INSERT INTO verbrauch (strom, datum) \
                     VALUES (%s, %s)
                 '''
-        date_var = dt.date.today() # das aktuelle Datum immer eintragen
-        values = (strom, date_var) # speichere die Werte als Tuple
+        date_var = dt.date.today()  # das aktuelle Datum immer eintragen
+        values = (strom, date_var)  # speichere die Werte als Tuple
 
         try:
-            curs = self.connection.cursor()         # erzeuge ein Cursor-Objekt
-            curs.execute(query, values)             # schreibe values in den gegebenen Spalten in query
-            self.connection.commit()                # dann schicke die Anfrage zu dem Server
+            curs = connection.cursor()  # erzeuge ein Cursor-Objekt
+            curs.execute(query, values)  # schreibe values in den gegebenen Spalten in query
+            connection.commit()  # dann schicke die Anfrage zu dem Server
             nbr_of_row = curs.rowcount
             print("Number of Rows: ", nbr_of_row)
         except (Exception, psycopg2.Error) as dberror:
-            if self.connection:
-                print("Fehler beim Einfügen der Daten in der DB: ",dberror)
-                self.connection.rollback()         # db zurücksetzen
+            if connection:
+                print("Fehler beim Einfügen der Daten in der DB: ", dberror)
+                connection.rollback()  # db zurücksetzen
         finally:
-            if self.connection:
-                curs.close()                       # schließe der Cursor aber nicht die Verbindung (Zum Testen)
+            if connection is not None:
+                curs.close()  # schließe der Cursor aber nicht die Verbindung (Zum Testen)
                 print("Cursor geschlossen")
+                connection.close()  # schließe die Verbindung
+                print("Verbindung geschlossen")
 
-
-    def read_db_content(self):
+    def read_db_content(self, connection):
         """
             Lese der komplette Inhalt der Datenbank und Erstelle eine Tabelle damit
             :return: df: Pandas-DataFrame-Objekt, welche der Inhalt der DB erhält (wird noch Vorverarbeitet)
         """
         df = None
         try:
-            curs = self.connection.cursor()  # erstelle eine Verbindung zu dem Server
+            curs = connection.cursor()  # erstelle eine Verbindung zu dem Server
             query = '''
                                 SELECT * FROM verbrauch
                             '''
@@ -90,19 +93,22 @@ class PostgreSQLDatabase:
                 print('strom: ', content[1])
                 print('datum: ', content[2])
             print("\nDB-Inhalt nach der Bearbeitung mit Pandas:\n")
-            cols = ['id', 'strom', 'datum']  # die Abfrage erfordert die Index-Spalte zu erstellen, sonst führt zur Fehler
+            cols = ['id', 'strom',
+                    'datum']  # die Abfrage erfordert die Index-Spalte zu erstellen, sonst führt zur Fehler
             df = pd.DataFrame(db_content, columns=cols, index=None)
             print("Vor der Bearbeitung ")
             print(df)
-            #df = self.on_preprocessing_data(data=df)
+            # df = self.on_preprocessing_data(data=df)
 
         except (Exception, psycopg2.Error) as dberror:
             print("Fehler beim Lesen des DB-Inhalts", dberror)
-            self.connection.rollback()
+            connection.rollback()
         finally:
-            if self.connection:
+            if connection is not None:
                 curs.close()
                 print("Cursor geschlossen")
+                connection.close()
+                print("Verbindung zum Server erfolgreich geschlossen")
         return df
 
     def on_preprocessing_data(self, data):
@@ -112,24 +118,26 @@ class PostgreSQLDatabase:
             :param data: Pandas-DataFrame-Objekt
             :return: data
         """
-        values = data['strom'].values # speiche die Werte vor der Umwandlung ansonsten geht sie verloren
-        reconverted_date = pd.to_datetime(data['datum']) # wandere das Datum um
+        values = data['strom'].values  # speiche die Werte vor der Umwandlung ansonsten geht sie verloren
+        reconverted_date = pd.to_datetime(data['datum'])  # wandere das Datum um
 
-        frame = pd.DataFrame(columns=['strom'], index=reconverted_date) # erstelle ein neues Frame mit Datum als Index
-        frame['strom'] = values # gebe die gespeicherten Werte in dem neuen Frame zurück
+        frame = pd.DataFrame(columns=['strom'], index=reconverted_date)  # erstelle ein neues Frame mit Datum als Index
+        frame['strom'] = values  # gebe die gespeicherten Werte in dem neuen Frame zurück
         frame['tag'] = frame.index.day
         frame['monat'] = frame.index.month
         frame['jahr'] = frame.index.year
         frame['wochentag'] = frame.index.weekday_name
+        frame.index.name = None  # Name in der Index-Spalte löschen
         print("nach der Bearbeitung")
-        print(frame, '\n', frame.dtypes)
-        #print(data)
-        return frame
-if __name__=="__main__":
-    db =PostgreSQLDatabase()
-    db.in_connecting()
+        print(frame.head(3))
 
-    #db.write_new_values(545.96)
-    data = db.read_db_content()
-    db.on_preprocessing_data(data=data)
-    data.head(2)
+        return frame
+
+
+        # if __name__ == "__main__":
+        #     db = PostgreSQLDatabase()
+        #     connection = db.in_connecting(db.path)
+        #     # db.write_new_values(545.96)
+        #     data = db.read_db_content(connection)
+        #     db.on_preprocessing_data(data=data)
+        #     data.head(2)
