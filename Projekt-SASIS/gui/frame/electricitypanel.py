@@ -70,7 +70,7 @@ class ApplianceDeviceControl:
 
     def on_create_labelframe(self, frame_name, col, row, colpad, rowpad, pos, pic=None):
 
-        if pic == None:
+        if pic is None:
 
             self.panel_control_lf = LabelFrame(master=self.dev_control_panel, text=frame_name)
             self.panel_control_lf.grid(column=col, row=row, padx=colpad, pady=rowpad, sticky=pos)
@@ -85,9 +85,9 @@ class ApplianceDeviceControl:
                 pass
 
             print(img.mode, '- - - - ', img.size)
-            img.rotate(90)                              # Bild Umdrehen
+            img.rotate(90)  # Bild Umdrehen
             img.thumbnail((884, 400), Image.ANTIALIAS)  # groesse des Bild anpassen
-            img_lbl = ImageTk.PhotoImage(image=img)     # ohne dass --> UnboundLocalError: local variable 'img'
+            img_lbl = ImageTk.PhotoImage(image=img)  # ohne dass --> UnboundLocalError: local variable 'img'
 
             # referenced before assignment img_lbl musst als label image zugewiesen werden
             # ohne dass - - > _tkinter.TclError: image specification must contain an odd number of elements
@@ -121,6 +121,23 @@ class ApplianceDeviceControl:
         if room_name == 'ALLE LICHTER AUS':
             btn.configure(command=self.on_updated_09)
 
+    """ Das die Berechnungen für den Verbrauch werden in der Methode on-update durchgeführt.
+        Die Berechnungen basieren sich auf den täglichen durchnittlichen Verbrauch: 4019,49 Watt pro Stunden
+        und werden dann hier in Watt pr Minuten umgerechnet (Leistung / 60 min) und die Leistung pro minuten zu haben.
+        Damit der Prozess für die Simulation auch nicht so schnell geht, werden die Werten je 2 Sekunden hochgezählt.
+        Die Tabelle unten gibt der Umrechnung der Leistung jedes Geräte pro Minute (w min)
+        
+        +--------------------+--------------------------+-----------------------+
+        | Gerät              | Normale Leistung (in Wh) | Umrechnung (in w min) |
+        +--------------------+--------------------------+-----------------------+
+        | Licht (L*)         | 60 wh                    |  1 w min              |
+        | Kochplatte (KP4)   | 4000 wh                  |  66,67 w min          |
+        | Waschmaschine (WM4)| 2200 wh                  |  36,67 w min          |
+        +--------------------+--------------------------+-----------------------+
+        
+        Die on-update-action-Methode ist für das Laden von Bilder verantwortlich.
+    """
+
     def on_updated_action(self, btn_obj_name):
         """
 
@@ -142,21 +159,21 @@ class ApplianceDeviceControl:
             print('Variable nicht erkannt: --> ', kerror)
 
     def on_updated_00(self):
-        if self.dict_btn['WZ']['text'] == 'OFF': # prüfen den aktuellen Text im Button
-            self.dict_btn['WZ']['text'] = 'ON'   # dann ändere ihn mit dem hier
-            self.dict_btn['WZ'].configure(state='ON') # dasselbe auch für den Button-Zustand
+        if self.dict_btn['WZ']['text'] == 'OFF':  # prüfen den aktuellen Text im Button
+            self.dict_btn['WZ']['text'] = 'ON'  # dann ändere ihn mit dem hier
+            self.dict_btn['WZ'].configure(state='ON')  # dasselbe auch für den Button-Zustand
             print(self.dict_btn['WZ']['state'])
-            self.on_updated_action('WZ')             # rufe die Methode für dementsprechenden Raumname auf
+            self.on_updated_action('WZ')  # rufe die Methode für dementsprechenden Raumname auf
 
             # und setze eine Verbindung zwischen dem Button und der Methode auf, welche in einem Thread läuft
             self.dict_btn['WZ'].bind('<Button-1>', self.on_thread_00(self.dict_btn['WZ']['state']))
 
         else:
-            self.dict_btn['WZ']['text'] = 'OFF' # sonst setze den Text
-            self.dict_btn['WZ']['state'] = 'OFF' # und Button-Zustand in dem vorherigen Zustand zurück
-            print("Last values of Va-00 = ", self.dict_tk_var['WZ'].get()) # prüfe der gepeicherte Wert in der TK-Var
+            self.dict_btn['WZ']['text'] = 'OFF'  # sonst setze den Text
+            self.dict_btn['WZ']['state'] = 'OFF'  # und Button-Zustand in dem vorherigen Zustand zurück
+            print("Last values of Va-00 = ", self.dict_tk_var['WZ'].get())  # prüfe der gepeicherte Wert in der TK-Var
 
-            try: # setzte das Bild auch auf dem ersten Zustand zurück
+            try:  # setzte das Bild auch auf dem ersten Zustand zurück
                 img = Image.open(os.path.join(self.filepath, self.plan['NICHST']))
                 img.rotate(90)
                 img.thumbnail((884, 400), Image.ANTIALIAS)
@@ -171,16 +188,17 @@ class ApplianceDeviceControl:
                 print('Variable nicht erkannt: --> ', kerror)
 
             print("STATE OF THR IN DICT: ", self.thread_dict['WZ'].is_alive())
-            if self.thread_dict['WZ'].is_alive(): # der Thread ist noch am Leben
-                self.thread_dict['WZ'].join(.25) # versuche ihn abzuschliessen
+            if self.thread_dict['WZ'].is_alive():  # der Thread ist noch am Leben
+                self.thread_dict['WZ'].join(.25)  # versuche ihn abzuschliessen
                 print("STATS OF DICT NOW: ", self.thread_dict['WZ'].is_alive())
-                dauer = self.dict_tk_var['WZ'].get() # der letzte Wert in der TK-Var in temporärer Var speichern
-                print("STORED VALUE: ", dauer)
+                during = self.dict_tk_var['WZ'].get()  # der letzte Wert in der TK-Var in temporärer Var speichern
+                print("STORED VALUE: ", during)
                 print("REINIT TKVAT: ")
-                self.dict_tk_var['WZ'].set(0) # der TK-Var auf 0 zurücksetzen
+                self.dict_tk_var['WZ'].set(0)  # der TK-Var auf 0 zurücksetzen
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WZ'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WZ'].is_alive())
-                print("VERBRAUCH IN WZ: ", np.round((dauer * 2.), decimals=2), "watt min") # der Verbrauch in der DB speichern
+                print("VERBRAUCH IN WZ: ", np.round((during * 2.), decimals=2),
+                      "watt min")  # der Verbrauch in der DB speichern
 
     def on_updated_01(self):
         if self.dict_btn['SZ']['text'] == 'OFF':
@@ -211,13 +229,13 @@ class ApplianceDeviceControl:
             if self.thread_dict['SZ'].is_alive():
                 self.thread_dict['SZ'].join(.25)
                 print("STATS OF DICT NOW: ", self.thread_dict['SZ'].is_alive())
-                dauer = self.dict_tk_var['SZ'].get()
-                print("STORED VALUE: ", dauer)
+                during = self.dict_tk_var['SZ'].get()
+                print("STORED VALUE: ", during)
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['SZ'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['SZ'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['SZ'].is_alive())
-                print("VERBRAUCH IN SZ: ", np.round((dauer * 1.), decimals=2), "watt min")
+                print("VERBRAUCH IN SZ: ", np.round((during * 1.), decimals=2), "watt min")
 
     def on_updated_02(self):
         if self.dict_btn['WC']['text'] == 'OFF':
@@ -248,13 +266,13 @@ class ApplianceDeviceControl:
             if self.thread_dict['WC'].is_alive():
                 self.thread_dict['WC'].join(.25)
                 print("STATS OF DICT NOW: ", self.thread_dict['WC'].is_alive())
-                dauer = self.dict_tk_var['WC'].get()
-                print("STORED VALUE: ", dauer)
+                during = self.dict_tk_var['WC'].get()
+                print("STORED VALUE: ", during)
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['WC'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WC'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WC'].is_alive())
-                print("VERBRAUCH IN WC: ", np.round((dauer * 1.), decimals=2), "watt min")
+                print("VERBRAUCH IN WC: ", np.round((during * 1.), decimals=2), "watt min")
 
     def on_updated_03(self):
         if self.dict_btn['DUSCHE']['text'] == 'OFF':
@@ -285,13 +303,13 @@ class ApplianceDeviceControl:
             if self.thread_dict['DUSCHE'].is_alive():
                 self.thread_dict['DUSCHE'].join(.25)
                 print("STATS OF DICT NOW: ", self.thread_dict['DUSCHE'].is_alive())
-                dauer = self.dict_tk_var['DUSCHE'].get()
-                print("STORED VALUE: ", dauer)
+                during = self.dict_tk_var['DUSCHE'].get()
+                print("STORED VALUE: ", during)
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['DUSCHE'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['DUSCHE'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['DUSCHE'].is_alive())
-                print("VERBRAUCH IN DUSCHE: ", np.round((dauer * 1.), decimals=2), "watt min")
+                print("VERBRAUCH IN DUSCHE: ", np.round((during * 1.), decimals=2), "watt min")
 
     def on_updated_04(self):
         if self.dict_btn['WZ + K']['text'] == 'OFF':
@@ -322,13 +340,13 @@ class ApplianceDeviceControl:
             if self.thread_dict['WZ + K'].is_alive():
                 self.thread_dict['WZ + K'].join(.25)
                 print("STATS OF DICT NOW: ", self.thread_dict['WZ + K'].is_alive())
-                dauer = self.dict_tk_var['WZ + K'].get()
-                print("STORED VALUE: ", dauer)
+                during = self.dict_tk_var['WZ + K'].get()
+                print("STORED VALUE: ", during)
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['WZ + K'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WZ + K'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WZ + K'].is_alive())
-                print("VERBRAUCH IN WZ + K: ", np.round((dauer * 2.), decimals=2), "watt min")
+                print("VERBRAUCH IN WZ + K: ", np.round((during * 2.), decimals=2), "watt min")
 
     def on_updated_05(self):
         if self.dict_btn['WZ + K + KP4']['text'] == 'OFF':
@@ -359,13 +377,14 @@ class ApplianceDeviceControl:
             if self.thread_dict['WZ + K + KP4'].is_alive():
                 self.thread_dict['WZ + K + KP4'].join(.25)
                 print("STATS OF DICT NOW: ", self.thread_dict['WZ + K + KP4'].is_alive())
-                dauer = self.dict_tk_var['WZ + K + KP4'].get()
-                print("STORED VALUE: ", dauer)
+                during = self.dict_tk_var['WZ + K + KP4'].get()
+                print("STORED VALUE: ", during)
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['WZ + K + KP4'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WZ + K + KP4'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WZ + K + KP4'].is_alive())
-                print("VERBRAUCH IN WZ + K + KP4: ", np.round((dauer * 68.67), decimals=2), "watt min") # 1+1+66,67 watt min
+                print("VERBRAUCH IN WZ + K + KP4: ", np.round((during * 68.67), decimals=2),
+                      "watt min")  # 1+1+66,67 watt min
 
     def on_updated_06(self):
         if self.dict_btn['WZ + K + WM4']['text'] == 'OFF':
@@ -396,13 +415,14 @@ class ApplianceDeviceControl:
             if self.thread_dict['WZ + K + WM4'].is_alive():
                 self.thread_dict['WZ + K + WM4'].join(.25)
                 print("STATS OF DICT NOW: ", self.thread_dict['WZ + K + WM4'].is_alive())
-                dauer = self.dict_tk_var['WZ + K + WM4'].get()
-                print("STORED VALUE: ", dauer)
+                during = self.dict_tk_var['WZ + K + WM4'].get()
+                print("STORED VALUE: ", during)
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['WZ + K + WM4'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WZ + K + WM4'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WZ + K + WM4'].is_alive())
-                print("VERBRAUCH IN WZ + K + WM4: ", np.round((dauer * 38.67), decimals=2), "watt min") # 1+1+66,67 watt min
+                print("VERBRAUCH IN WZ + K + WM4: ", np.round((during * 38.67), decimals=2),
+                      "watt min")  # 1+1+66,67 watt min
 
     def on_updated_07(self):
         if self.dict_btn['WZ + K + KP4 + WM4']['text'] == 'OFF':
@@ -434,13 +454,14 @@ class ApplianceDeviceControl:
             if self.thread_dict['WZ + K + KP4 + WM4'].is_alive():
                 self.thread_dict['WZ + K + KP4 + WM4'].join(.25)
                 print("STATS OF DICT NOW: ", self.thread_dict['WZ + K + KP4 + WM4'].is_alive())
-                dauer = self.dict_tk_var['WZ + K + KP4 + WM4'].get()
-                print("STORED VALUE: ", dauer)
+                during = self.dict_tk_var['WZ + K + KP4 + WM4'].get()
+                print("STORED VALUE: ", during)
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['WZ + K + KP4 + WM4'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WZ + K + KP4 + WM4'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WZ + K + KP4 + WM4'].is_alive())
-                print("VERBRAUCH IN WZ + K + KP4 + WM4: ", np.round((dauer * 105.34), decimals=2), "watt min") # 1+1+66,67+36,67 watt min
+                print("VERBRAUCH IN WZ + K + KP4 + WM4: ", np.round((during * 105.34), decimals=2),
+                      "watt min")  # 1+1+66,67+36,67 watt min
 
     def on_updated_08(self):
         if self.dict_btn['ALLE LICHTER EIN']['text'] == 'OFF':
@@ -448,7 +469,8 @@ class ApplianceDeviceControl:
             self.dict_btn['ALLE LICHTER EIN'].configure(state='ON')
             print(self.dict_btn['ALLE LICHTER EIN']['state'])
             self.on_updated_action('ALLE LICHTER EIN')
-            self.dict_btn['ALLE LICHTER EIN'].bind('<Button-1>', self.on_thread_08(self.dict_btn['ALLE LICHTER EIN']['state']))
+            self.dict_btn['ALLE LICHTER EIN'].bind('<Button-1>',
+                                                   self.on_thread_08(self.dict_btn['ALLE LICHTER EIN']['state']))
         else:
             self.dict_btn['ALLE LICHTER EIN']['text'] = 'OFF'
             self.dict_btn['ALLE LICHTER EIN']['state'] = 'OFF'
@@ -471,13 +493,13 @@ class ApplianceDeviceControl:
             if self.thread_dict['ALLE LICHTER EIN'].is_alive():
                 self.thread_dict['ALLE LICHTER EIN'].join(.25)
                 print("STATS OF DICT NOW: ", self.thread_dict['ALLE LICHTER EIN'].is_alive())
-                dauer = self.dict_tk_var['ALLE LICHTER EIN'].get()
-                print("STORED VALUE: ", dauer)
+                during = self.dict_tk_var['ALLE LICHTER EIN'].get()
+                print("STORED VALUE: ", during)
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['ALLE LICHTER EIN'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['ALLE LICHTER EIN'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['ALLE LICHTER EIN'].is_alive())
-                print("VERBRAUCH IN ALLE LICHTER EIN: ", np.round((dauer * 9.), decimals=2), "watt min")
+                print("VERBRAUCH IN ALLE LICHTER EIN: ", np.round((during * 9.), decimals=2), "watt min")
 
     def on_updated_09(self):
         if self.dict_btn['ALLE LICHTER AUS']['text'] == 'OFF':
@@ -485,7 +507,8 @@ class ApplianceDeviceControl:
             self.dict_btn['ALLE LICHTER AUS'].configure(state='ON')
             print(self.dict_btn['ALLE LICHTER AUS']['state'])
             self.on_updated_action('ALLE LICHTER AUS')
-            self.dict_btn['ALLE LICHTER AUS'].bind('<Button-1>', self.on_thread_09(self.dict_btn['ALLE LICHTER AUS']['state']))
+            self.dict_btn['ALLE LICHTER AUS'].bind('<Button-1>',
+                                                   self.on_thread_09(self.dict_btn['ALLE LICHTER AUS']['state']))
         else:
             self.dict_btn['ALLE LICHTER AUS']['text'] = 'OFF'
             self.dict_btn['ALLE LICHTER AUS']['state'] = 'OFF'
@@ -508,13 +531,13 @@ class ApplianceDeviceControl:
             if self.thread_dict['ALLE LICHTER AUS'].is_alive():
                 self.thread_dict['ALLE LICHTER AUS'].join(.25)
                 print("STATS OF DICT NOW: ", self.thread_dict['ALLE LICHTER AUS'].is_alive())
-                dauer = self.dict_tk_var['ALLE LICHTER AUS'].get()
-                print("STORED VALUE: ", dauer)
+                during = self.dict_tk_var['ALLE LICHTER AUS'].get()
+                print("STORED VALUE: ", during)
                 print("REINIT TKVAT: ")
                 self.dict_tk_var['ALLE LICHTER AUS'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['ALLE LICHTER AUS'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['ALLE LICHTER AUS'].is_alive())
-                print("VERBRAUCH IN ALLE LICHTER AUS: ", np.round((dauer * 1.), decimals=2), "watt min")
+                print("VERBRAUCH IN ALLE LICHTER AUS: ", np.round((during * 1.), decimals=2), "watt min")
 
     def on_updated_10(self):
         if self.dict_btn['NICHST']['text'] == 'OFF':
@@ -542,10 +565,10 @@ class ApplianceDeviceControl:
             except KeyError as kerror:
                 print('Variable nicht erkannt: --> ', kerror)
 
-    ## Multi-Threading: https://stackoverflow.com/questions/6893968/how-to-get-the-return-value-from-a-thread-in-python
-    ## https://stackoverflow.com/questions/41711357/python-how-to-multi-thread-a-function-that-returns-multiple-values
-    ## https://stackoverflow.com/questions/11986005/better-way-to-get-results-from-multiple-threads
-    ## Thread: https://nitratine.net/blog/post/python-threading-basics/
+    # Multi-Threading: https://stackoverflow.com/questions/6893968/how-to-get-the-return-value-from-a-thread-in-python
+    # https://stackoverflow.com/questions/41711357/python-how-to-multi-thread-a-function-that-returns-multiple-values
+    # https://stackoverflow.com/questions/11986005/better-way-to-get-results-from-multiple-threads
+    # Thread: https://nitratine.net/blog/post/python-threading-basics/
     def on_inc00(self, state):
         while self.dict_btn['WZ']['state'] == state == 'ON':
             self.dict_tk_var['WZ'].set(self.dict_tk_var['WZ'].get() + 1)  # für die Inkrementierung
