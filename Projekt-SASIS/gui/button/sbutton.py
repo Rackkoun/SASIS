@@ -14,13 +14,13 @@ class SASISActionButton:
     """
     """
 
-    def __init__(self, root, master_lf=None):
+    def __init__(self, root):
         """
 
         :param root:
         :param master_lf:
         """
-        self.master_lf = master_lf
+        #self.master_lf = master_lf
         self.btn = Button(master=root, text='OFF', state='OFF', command=None)
         pass
 

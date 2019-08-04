@@ -8,7 +8,8 @@ https://datatofish.com/matplotlib-charts-tkinter-gui/
 """
 from tkinter.ttk import Frame
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import seaborn as sb
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 
 class SGraphTK:
@@ -20,18 +21,24 @@ class SGraphTK:
     mit irgendwelchem Machinellen Lernen Algorithmus trainiert sind
     """
 
-    def __init__(self, root=None):
+    def __init__(self, col, row, px, py, master_lf=None):
         """
         Die Klasse besitzt ein Hauptframe für graphische Ansichte (gmaster) und ein inneres Frame (intern_frame_up),
         wobei, das innere Frame für die Visualisierung nicht trainierten Daten zuständig ist.
         :param root: Frame, in welchem der Graph geplot wird
         """
-        self.gmaster = Frame(master=root)                  # Hauptframe: wird von einer anderen Klasse (Frame) bestimmt
+        self.gmaster = master_lf                 # Hauptframe: wird von einer anderen Klasse (Frame) bestimmt
+        self.gmaster.grid(column=col, row=row, padx=px, pady=py)
         self.intern_frame = Frame(master=self.gmaster)     # innere Frame für einzelnen Graphen
-        self.intern_frame.pack(side='top')
-        self.gmaster.pack()
+        self.intern_frame.grid(column=col, row=row, padx=px, pady=py) #.pack()
+        # self.gmaster.pack()
+        self.canvas = None
+        self.frame = None
+        # self.toolbar = None
+        # self.fig = None
+        pass
 
-    def on_draw_line(self, x, y, xlab, ylab, lincolor, linstyle):
+    def on_draw_line(self, x, y, xlab, ylab, lincolor=None, linstyle=None):
         """
         ...
         :param x:
@@ -43,6 +50,7 @@ class SGraphTK:
         :param figcol:
         :return:
         """
+        # frame = Frame(master=self.gmaster)
         fig = plt.Figure(figsize=(4.4, 2.7), dpi=80, facecolor='white', constrained_layout=True)
         ax = fig.add_subplot(111)
         # ax = self.on_create_fig(figcol)
@@ -50,7 +58,30 @@ class SGraphTK:
         ax.set_xlabel(xlab)
         ax.set_ylabel(ylab)
 
-        canvas = FigureCanvasTkAgg(fig, self.intern_frame)
-        canvas.get_tk_widget().pack(side='left', padx=8)
+        # canvas.get_tk_widget().pack(padx=8, pady=8)
 
-        self.gmaster.update()
+        # self.gmaster.update()
+        return fig
+
+    def put_graph_on_canvas(self, fig): #
+        self.canvas = FigureCanvasTkAgg(fig, master=self.intern_frame)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().grid(column=0, row=0, padx=5, pady=5)
+        self.intern_frame.update()
+
+    def on_update_canvas(self, fig):
+        self.canvas = None
+        self.put_graph_on_canvas(fig)
+
+    def on_draw_scatter(self, x, y, d, h):
+        fig = plt.Figure(figsize=(4.4, 2.7), dpi=80, facecolor='white', constrained_layout=True)
+        ax = fig.add_subplot(111)
+        sb.scatterplot(x=x, y=y, hue=h, data=d, ax=ax)
+        return fig
+
+    # https://stackoverflow.com/questions/31594549/how-do-i-change-the-figure-size-for-a-seaborn-plot
+    def on_draw_box(self, x, y, df, h):
+        fig = plt.Figure(figsize=(4.4, 2.7), dpi=80, facecolor='white', constrained_layout=True)
+        ax = fig.add_subplot(111)
+        sb.boxplot(x=x, y=y, data=df, hue=h, ax=ax)
+        return fig

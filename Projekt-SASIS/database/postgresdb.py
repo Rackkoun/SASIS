@@ -134,10 +134,16 @@ class PostgreSQLDatabase:
         return frame
 
 
-        # if __name__ == "__main__":
-        #     db = PostgreSQLDatabase()
-        #     connection = db.in_connecting(db.path)
-        #     # db.write_new_values(545.96)
-        #     data = db.read_db_content(connection)
-        #     db.on_preprocessing_data(data=data)
-        #     data.head(2)
+if __name__ == "__main__":
+    db = PostgreSQLDatabase()
+    connection = db.in_connecting(db.path)
+    #db.write_new_values(545.96)
+    data = db.read_db_content(connection)
+    #data = db.on_preprocessing_data(data=data)
+    grp = data.groupby('datum')['strom'].sum() # erzeuge ein Serie-Objekt
+    reconverted_index = pd.to_datetime(grp.index)
+    df = pd.DataFrame(grp.values, columns=['strom'], index=reconverted_index)
+    df.index.name= None
+    df['tag'] = df.index.day
+
+    print(df)

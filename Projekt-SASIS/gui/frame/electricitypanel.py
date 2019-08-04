@@ -9,13 +9,12 @@ from PIL import Image, ImageTk
 from gui.button.sbutton import SASISActionButton as sButton
 from model.elementdict.labelmodel import LabelModel
 from model.constants.pictures import HousePlan
-from database.dbconfig import DBConfiguration
 from database.postgresdb import PostgreSQLDatabase as server
 
-from configparser import ConfigParser
-"""@author: Ruphus
-   Created on 20.07.2019
-   source: Threading: https://automatetheboringstuff.com/chapter15/
+"""
+    @author: Ruphus
+    Created on 20.07.2019
+    source: Threading: https://automatetheboringstuff.com/chapter15/
                    https://www.devdungeon.com/content/gui-programming-python#threads 
 """
 
