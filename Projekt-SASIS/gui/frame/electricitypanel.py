@@ -36,6 +36,8 @@ class ApplianceDeviceControl:
         self.config_file = './res/config/dbconfig.ini'
         self.plan = HousePlan().load_plan
 
+        self.pic_height = 600
+        self.pic_width = 2520
         self.thread_dict = {}
         self.queue = Queue()
         self.dict_btn = {}
@@ -91,7 +93,7 @@ class ApplianceDeviceControl:
 
             print(img.mode, '- - - - ', img.size)
             img.rotate(90)  # Bild Umdrehen
-            img.thumbnail((884, 400), Image.ANTIALIAS)  # groesse des Bild anpassen
+            img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)  # groesse des Bild anpassen
             img_lbl = ImageTk.PhotoImage(image=img)  # ohne dass --> UnboundLocalError: local variable 'img'
 
             # referenced before assignment img_lbl musst als label image zugewiesen werden
@@ -153,7 +155,7 @@ class ApplianceDeviceControl:
             img = Image.open(os.path.join(self.imgpath, self.plan[btn_obj_name]))
 
             img.rotate(90)
-            img.thumbnail((884, 400), Image.ANTIALIAS)
+            img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)
             img_lbl = ImageTk.PhotoImage(image=img)
             self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
             self.house_lbl.grid(column=0, row=0, padx=8, pady=5)
@@ -181,7 +183,7 @@ class ApplianceDeviceControl:
             try:  # setzte das Bild auch auf dem ersten Zustand zurück
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
-                img.thumbnail((884, 400), Image.ANTIALIAS)
+                img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(image=img)
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
                 self.house_lbl.grid(column=0, row=0, padx=8, pady=5)
@@ -200,7 +202,8 @@ class ApplianceDeviceControl:
                 print("STORED VALUE: ", during)
 
                 # speichere direkt in der DB
-                during = np.round((during * 2.), decimals=2)
+                during = during * 2.
+
                 connected = self.connection.in_connecting(self.config_file)
                 df = self.connection.write_new_values(during, connected)
                 print("df in TKINTER ")
@@ -228,7 +231,7 @@ class ApplianceDeviceControl:
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
-                img.thumbnail((884, 400), Image.ANTIALIAS)
+                img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(image=img)
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
                 self.house_lbl.grid(column=0, row=0, padx=8, pady=5)
@@ -245,7 +248,8 @@ class ApplianceDeviceControl:
                 during = self.dict_tk_var['SZ'].get()
                 print("STORED VALUE: ", during)
 
-                during = np.round((during * 1.), decimals=2)
+                during = during * 1.
+
                 connected = self.connection.in_connecting(self.config_file)
                 df = self.connection.write_new_values(during, connected)
                 print("df in TKINTER ")
@@ -271,7 +275,7 @@ class ApplianceDeviceControl:
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
-                img.thumbnail((884, 400), Image.ANTIALIAS)
+                img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
                     image=img)
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
@@ -289,7 +293,8 @@ class ApplianceDeviceControl:
                 during = self.dict_tk_var['WC'].get()
                 print("STORED VALUE: ", during)
 
-                during = np.round((during * 1.), decimals=2)
+                during = during * 1.
+
                 connected = self.connection.in_connecting(self.config_file)
                 df = self.connection.write_new_values(during, connected)
                 print("df in TKINTER ")
@@ -315,7 +320,7 @@ class ApplianceDeviceControl:
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
-                img.thumbnail((884, 400), Image.ANTIALIAS)
+                img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
                     image=img)
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
@@ -333,7 +338,8 @@ class ApplianceDeviceControl:
                 during = self.dict_tk_var['DUSCHE'].get()
                 print("STORED VALUE: ", during)
 
-                during = np.round((during * 1.), decimals=2)
+                during = during * 1.
+
                 connected = self.connection.in_connecting(self.config_file)
                 df = self.connection.write_new_values(during, connected)
                 print("df in TKINTER ")
@@ -359,7 +365,7 @@ class ApplianceDeviceControl:
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
-                img.thumbnail((884, 400), Image.ANTIALIAS)
+                img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
                     image=img)
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
@@ -377,7 +383,8 @@ class ApplianceDeviceControl:
                 during = self.dict_tk_var['WZ + K'].get()
                 print("STORED VALUE: ", during)
 
-                during = np.round((during * 2.), decimals=2)
+                during = during * 2.
+
                 connected = self.connection.in_connecting(self.config_file)
                 df = self.connection.write_new_values(during, connected)
                 print("df in TKINTER ")
@@ -403,7 +410,7 @@ class ApplianceDeviceControl:
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
-                img.thumbnail((884, 400), Image.ANTIALIAS)
+                img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
                     image=img)
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
@@ -421,7 +428,8 @@ class ApplianceDeviceControl:
                 during = self.dict_tk_var['WZ + K + KP4'].get()
                 print("STORED VALUE: ", during)
 
-                during = np.round((during * 68.67), decimals=2)
+                during = during * 68.67
+
                 connected = self.connection.in_connecting(self.config_file)
                 df = self.connection.write_new_values(during, connected)
                 print("df in TKINTER ")
@@ -447,7 +455,7 @@ class ApplianceDeviceControl:
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
-                img.thumbnail((884, 400), Image.ANTIALIAS)
+                img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
                     image=img)
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
@@ -465,7 +473,8 @@ class ApplianceDeviceControl:
                 during = self.dict_tk_var['WZ + K + WM4'].get()
                 print("STORED VALUE: ", during)
 
-                during = np.round((during * 38.67), decimals=2)
+                during = during * 38.67
+
                 connected = self.connection.in_connecting(self.config_file)
                 df = self.connection.write_new_values(during, connected)
                 print("df in TKINTER ")
@@ -492,7 +501,7 @@ class ApplianceDeviceControl:
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
-                img.thumbnail((884, 400), Image.ANTIALIAS)
+                img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
                     image=img)
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
@@ -510,7 +519,8 @@ class ApplianceDeviceControl:
                 during = self.dict_tk_var['WZ + K + KP4 + WM4'].get()
                 print("STORED VALUE: ", during)
 
-                during = np.round((during * 105.34), decimals=2)
+                during = during * 105.34
+
                 connected = self.connection.in_connecting(self.config_file)
                 df = self.connection.write_new_values(during, connected)
                 print("df in TKINTER ")
@@ -537,7 +547,7 @@ class ApplianceDeviceControl:
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
-                img.thumbnail((884, 400), Image.ANTIALIAS)
+                img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
                     image=img)
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
@@ -555,7 +565,8 @@ class ApplianceDeviceControl:
                 during = self.dict_tk_var['ALLE LICHTER EIN'].get()
                 print("STORED VALUE: ", during)
 
-                during = np.round((during * 9.), decimals=2)
+                during = during * 9.
+
                 connected = self.connection.in_connecting(self.config_file)
                 df = self.connection.write_new_values(during, connected)
                 print("df in TKINTER ")
@@ -582,7 +593,7 @@ class ApplianceDeviceControl:
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
-                img.thumbnail((884, 400), Image.ANTIALIAS)
+                img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
                     image=img)
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
@@ -603,7 +614,7 @@ class ApplianceDeviceControl:
                 self.dict_tk_var['ALLE LICHTER AUS'].set(0)
                 print("TK VAR REINIT TO: ", self.dict_tk_var['ALLE LICHTER AUS'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['ALLE LICHTER AUS'].is_alive())
-                print("VERBRAUCH IN ALLE LICHTER AUS: ", np.round((during * 1.), decimals=2), "watt min")
+                print("VERBRAUCH IN ALLE LICHTER AUS: ", (during * 1.), "watt min")
 
     def on_updated_10(self):
         if self.dict_btn['NICHST']['text'] == 'OFF':
@@ -619,7 +630,7 @@ class ApplianceDeviceControl:
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
                 img.rotate(90)
-                img.thumbnail((884, 400), Image.ANTIALIAS)
+                img.thumbnail((self.pic_width, self.pic_height), Image.ANTIALIAS)
                 img_lbl = ImageTk.PhotoImage(
                     image=img)
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)

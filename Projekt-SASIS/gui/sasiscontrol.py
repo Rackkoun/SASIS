@@ -14,14 +14,12 @@ class SASISCommandInterface:
         """
         Initialisierung aller Komponenenten des Systems
         """
-        self.wmain = tk.Tk()                        # Hauptfenster
-        self.wtab = Notebook()                      # Reiter-Erstellung in dem Hauptfenster
-        self.elect_panel_tab = elecpanel(self.wtab) # Erste Reiteransicht: Strom und Bildplan
-        self.graph_tab = monitorpanel(self.wtab)    # Zweite Reiteransicht: Graphen und Algorithmen fuer die Darstellung
-        self.var_up = tk.IntVar()                   # Tk-Integer-Variable: wird fuer die RadionButton gebraucht, um zu wissen,
-                                                    # welcher Button ausgewaehlt ist
-        self.var_down = tk.IntVar()
-        self.on_create_window()                     # Initialisierung aller Elementen in Reitern
+        self.wmain = tk.Tk()  # Hauptfenster
+        self.wtab = Notebook()  # Reiter-Erstellung in dem Hauptfenster
+        self.elect_panel_tab = elecpanel(self.wtab)  # Erste Reiteransicht: Strom und Bildplan
+        self.graph_tab = monitorpanel(self.wtab)  # Zweite Reiteransicht: Graphen und Algorithmen fuer die Darstellung
+
+        self.on_create_window()  # Initialisierung aller Elementen in Reitern
 
         pass
 
@@ -31,6 +29,7 @@ class SASISCommandInterface:
         :return:
         """
         self.wmain.title('SASIS Control Interface')
+        self.wmain.resizable(False, False)
         print("Width: ", self.wmain.winfo_screenwidth(), "height: ", self.wmain.winfo_screenheight())
         self.wtab.add(self.elect_panel_tab.get_panel(), text="Steuerungsansicht")
         self.elect_panel_tab.on_create_labelframe('Steuerungspanel', 0, 0, 8, 10, 'N')
@@ -51,43 +50,37 @@ class SASISCommandInterface:
         self.elect_panel_tab.on_adding_basic_appliance('ALLES AUS', 0, 10, 8, 8, 'W')
 
         self.wtab.add(self.graph_tab.master, text='Graphenansicht')
-        #self.graph_tab.on_create_labelframe('Option UP Radio', 0, 0, 8, 10, 'NW')
-        #self.graph_tab.add_rbtn('radio up', 1, 0, 0, 8, 8, tk_var=self.var_up)
+
         self.graph_tab.on_create_labelframe('Maschinelles Lernen Algorithmen', 0, 1, 8, 10, 'NW')
-        #self.graph_tab.on_adding_content("LOF", 1, [2, 4, 47, 20], [0, 2, 4, 15], "XLAB", "YLAB", 0, 0, 8, 8)
-        self.graph_tab.add_rbtn('Local Outliers Factor', 1, 0, 0, 8, 8)
-        self.graph_tab.add_rbtn('Isolation Forest', 2, 0, 1, 8, 8)
-        self.graph_tab.add_rbtn('Elliptic Envelope', 3, 0, 1, 8, 8)
-        #self.graph_tab.add_rbtn('Elliptic Envelope', 3, 0, 2, 8, 8, tk_var=self.var_down)
-        self.graph_tab.on_create_frame_up_lf(frame_name='Darstellumg mit groben Daten', col=1, row=0, colpad=5, rowpad=5)
+        self.graph_tab.add_rbtn('Isolation Forest', 1, 0, 0, 8, 8)
+        self.graph_tab.add_rbtn('Elliptic Envelope', 2, 0, 1, 8, 8)
+        self.graph_tab.add_rbtn('Local Outliers Factor', 3, 0, 2, 8, 8)
+        self.graph_tab.add_rbtn('One Class SVM', 4, 0, 3, 8, 8)
+
+        self.graph_tab.on_create_frame_up_lf(frame_name='Darstellumg mit groben Daten', col=1, row=0, colpad=5,
+                                             rowpad=5)
         self.graph_tab.on_add_graph_up(grp_style='line', col=0, row=0, px=3, py=3)
         self.graph_tab.on_add_graph_up(grp_style='scatter', col=1, row=0, px=3, py=3)
-        self.graph_tab.on_add_graph_up(grp_style='box', col=0, row=2, px=3, py=3)
-        #self.graph_tab.onDraw(x=[2, 8, 3, -5, 7, 5, 16], y=[0, 4, 8, 2, 1, 8, 9], lx='X Label 2', ly='Y Label 2', c='g',
-        #                      s='dashed')
-        #self.graph_tab.onDraw(x=[2, 8, 3, -5, 7, 5, 16], y=[0, 4, 8, 2, 1, 8, 9], lx='X Label 2', ly='Y Label 2', c='r',
-        #                      s='dashed')
+        self.graph_tab.on_add_graph_up(grp_style='box', col=2, row=0, px=3, py=3)
+        self.graph_tab.on_add_graph_up(grp_style='hist', col=3, row=0, px=3, py=3)
 
-        self.graph_tab.on_create_frame_down_lf(frame_name='Graph Down', col=1, row=1, colpad=5, rowpad=5)
-        self.graph_tab.on_add_graph_down( algo_name='Isolation Forest', col=1, row=0, px=3, py=3, x=[],
-                                    y=[], lx='X Label 2', ly='Y Label 2', c='b',
-                                    s='dashed')
-        self.graph_tab.on_add_graph_down(algo_name='Elliptic Envelope', col=2, row=0, px=3, py=3,
-                                         x=[],
-                                         y=[], lx='X Label 2', ly='Y Label 2', c='b',
-                                         s='dashed')
-        self.graph_tab.on_add_graph_down(algo_name='Local Outliers Factor', col=0, row=0, px=3, py=3, x=[], y=[],
-                                       lx='X Label 2', ly='Y Label 2', c='b',
-                                       s='dashed')
-        #self.graph_tab.onDraw(x=[2, 8, 3, -5, 7, 5, 16], y=[0, 4, 8, 2, 1, 8, 9], lx='X Label 2', ly='Y Label 2', c='r',
-        #                      s='dashed')
+        self.graph_tab.on_create_frame_down_lf(frame_name='Darstellung mit trainierten Daten', col=1, row=1, colpad=5,
+                                               rowpad=5)
+        self.graph_tab.on_add_graph_down(algo_name='Isolation Forest', col=1, row=0, px=3, py=3, x=[], y=[],
+                                         x1=[], y1=[], x2=[], y2=[])
+        self.graph_tab.on_add_graph_down(algo_name='Elliptic Envelope', col=2, row=0, px=3, py=3, x=[], y=[],
+                                         x1=[], y1=[], x2=[], y2=[])
+        self.graph_tab.on_add_graph_down(algo_name='Local Outliers Factor', col=3, row=0, px=3, py=3, x=[], y=[],
+                                         x1=[], y1=[], x2=[], y2=[])
+        self.graph_tab.on_add_graph_down(algo_name='One Class SVM', col=4, row=0, px=3, py=3, x=[], y=[],
+                                         x1=[], y1=[], x2=[], y2=[])
+
         self.wtab.pack(expand=1, fill='both')
 
-        #self.elect_panel_tab.show_all_tk_var()
+        # self.elect_panel_tab.show_all_tk_var()
         pass
 
-
-    def lauchApp(self):
+    def start_app(self):
         """
         Endlos-Starten des Programms
         :return:
