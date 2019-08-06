@@ -49,7 +49,10 @@ class SGraphMLTK:
         ax.scatter(x=x, y=y, c='white', edgecolors='k', label='Stromverbrauch')
         ax.scatter(x=x1, y=y1, c='red', label='Outliers')
         if pred == -1:
-            ax.scatter(x=x2, y=y2, c='red', s=100, label='Neuer Eintrag')
+            if y2 > 4019.59:
+                ax.scatter(x=x2, y=y2, c='red', s=100, label='Neuer Eintrag')
+            else:
+                ax.scatter(x=x2, y=y2, c='blue', s=100, label='Neuer Eintrag')
         else:
             ax.scatter(x=x2, y=y2, c='green', s=80, label='Neuer Eintrag')
 

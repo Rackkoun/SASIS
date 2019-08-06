@@ -21,6 +21,8 @@ from model.algorithms.forest import IsolFo
 from model.managedata.testdata import TestDataGenerator
 from model.managedata.ingeneering import DataProcessing
 
+from protocol.mqtt import SASISWarmingMQTT as sasisMsg
+
 
 class MonitorringControl:
     """
@@ -33,25 +35,29 @@ class MonitorringControl:
         :param root: Frame in dem Canvas- und RadioButton-Elementen gepackt werden
         """
         self.master = Frame(master=root)
-        self.lf = None  # Labelframe fuer die Hierarchie der Elementen
-        self.rgrp = {}  # Label fuer RadioButtons werden hier hinzugefuegt
-        self.graph_up = None  # Obere Darstellung
-        self.graph_down = None  # Untere Darstellung
+        self.lf = None                   # Labelframe fuer die Hierarchie der Elementen
+        self.rgrp = {}                   # Label fuer RadioButtons werden hier hinzugefuegt
+        self.graph_up = None             # Obere Darstellung
+        self.graph_down = None           # Untere Darstellung
         self.tmp = None
-        self.tk_var = IntVar()
+        self.tk_var = IntVar()           # Var für Radio-ButtonAuswahl
 
         self.config_file = './res/config/dbconfig.ini'
-        self.graph_algo_dict = {}
-        self.graph_norm_dict = {}
-        self.grp_frame = {}
-        self.server = DB()
+        self.graph_algo_dict = {}        # speiche Graphen für trainierten Daten
+        self.graph_norm_dict = {}        # speiche Graphen für nicht trainierten Daten
 
-        self.data = {}
-        self.data_ing = DataProcessing()
+        self.server = DB()               # Instanz der PostgreSQL-Server
+
+        self.data = {}                   # Speiche Dataframe für jeden Maschinellen Lernen-Alorithmu
+        self.data_ing = DataProcessing() # Instance für die Berarbeitung von Daten vor dem Trainieren
         self.model_one = OneCSVM()
         self.model_isof = IsolFo()
         self.model_ellipenv = EllipticEnv()
         self.model_lof = LocOuFac()
+
+        self.broker = "192.168.178.28"  # wird an vergebene WLAN-IP-Adresse angepasst
+        self.topic = "strom/bot"        # MQTT-Topic
+        self.publisher = sasisMsg()     # MQTT-Klient erstellen
 
         self.train_all_modell()  # trainiere alla Model für zukünftige Vorhersage
 
@@ -119,28 +125,29 @@ class MonitorringControl:
         print(new_df)
         x = new_df['tag'].values
         y = new_df['strom'].values
-        yb = new_df['strom'].values.tolist()
-        print("Y: ", y, 'type: ', y.dtype)  # , '\nyf: ', yf, 'type: ', yf.dtype)
-        print("Y: ", yb, 'type: ', type(yb))
-        xb = new_df['wochentag']
-        hb = new_df['monat']
+        print("Y: ", y, 'type: ', y.dtype)
+
+        xb = new_df['wochentag'].values.tolist()
+        hb = new_df['monat'].values
+        print("xb: ", xb, " type: ", type(xb))
+        print("hb: ", hb)
         if grp_style == 'line':
             self.graph_norm_dict[grp_style] = graph
-            fig = self.graph_norm_dict[grp_style].on_draw_line(x=df['id'], y=df['strom'], xlab='ID (In Integer)',
+            fig = self.graph_norm_dict[grp_style].on_draw_line(x=x, y=y, xlab='Tage (In Integer)',
                                                                ylab='Stromverbrauch (in w min)', linstyle='solid',
                                                                lincolor='r')
             self.graph_norm_dict[grp_style].put_graph_on_canvas(fig=fig)
         if grp_style == 'scatter':
             self.graph_norm_dict[grp_style] = graph
-            fig = self.graph_norm_dict[grp_style].on_draw_scatter(x=x, y=y, d=new_df, h=new_df['wochentag'])
+            fig = self.graph_norm_dict[grp_style].on_draw_scatter(x=x, y=y, d=new_df, h=xb)
             self.graph_norm_dict[grp_style].put_graph_on_canvas(fig=fig)
         if grp_style == 'box':
             self.graph_norm_dict[grp_style] = graph
-            fig = self.graph_norm_dict[grp_style].on_draw_box(x=xb, y=yb, df=new_df, h=hb)
+            fig = self.graph_norm_dict[grp_style].on_draw_box(x=xb, y=y, df=new_df, h='wochentag')
             self.graph_norm_dict[grp_style].put_graph_on_canvas(fig=fig)
-        if grp_style == 'hist':
+        if grp_style == 'bar':
             self.graph_norm_dict[grp_style] = graph
-            fig = self.graph_norm_dict[grp_style].on_draw_hist(x=xb, y=y, data=df)
+            fig = self.graph_norm_dict[grp_style].on_draw_bar(x=xb, y=y, h='monat', data=new_df)
             self.graph_norm_dict[grp_style].put_graph_on_canvas(fig=fig)
         print(self.graph_algo_dict.keys())
 
@@ -171,36 +178,49 @@ class MonitorringControl:
             self.rgrp['Local Outliers Factor']['state'] = 'ENABLE'
             print(self.rgrp['Local Outliers Factor']['state'])
 
-            connection = self.server.in_connecting(self.config_file)  # erstelle eine Verbindung zum Server
-            df = self.server.read_db_content(connection)  # rufe date vom Server ab
+            connection = self.server.in_connecting(self.config_file)
+            df = self.server.read_db_content(connection)
             print("GROBE DATEN VOM SERVER:\n", df.head(4))
 
-            df2 = self.data_ing.on_getting_data_from_server(df)  # gruppiere die Daten in einem DF
+            df2 = self.data_ing.on_getting_data_from_server(df)
             print("DATEN nach der Gruppierung: \n", df2)
 
-            X = self.data_ing.split_for_sasis(df2)  # Wandle die in 2D-NP-Array
-            x_pred = self.model_lof.predict_locoufac(X)  # mache eine Vorhersage
+            print("len von df2 (Gruppiert): ", len(df2))
+
+            current_use = self.data_ing.select_current_value(df2)
+            print("Heutige Verbrauch:\n", current_use)
+            print("Len of Current: ", len(current_use))
+
+            X = self.data_ing.split_for_sasis(current_use)
+            x_pred = self.model_one.predict_one_csvm(X)
             print("Prediction: ", x_pred)
 
-            self.data['Local Outliers Factor'] = self.data_ing.on_predictinng_new_value(X[:, 0], x_pred, self.data[
+            current_use = self.data_ing.after_train_or_predict_data(current_use, x_pred)
+
+            print("current use modified: ", current_use)
+
+            self.data['Local Outliers Factor'] = self.data_ing.on_actualize_data_dict(current_use, self.data[
                 'Local Outliers Factor'])
             x = self.data['Local Outliers Factor']['tag'].values
             y = self.data['Local Outliers Factor']['strom'].values
+            print("X: ", x, " Y: ", y)
             print("Value in DF: \n", self.data['Local Outliers Factor'].tail(3))
 
             outliers = self.data_ing.detect_outliers(self.data['Local Outliers Factor'])
             x1 = outliers.tag.values
             y1 = outliers.strom.values
+            print("X1: ", x1, " Y1: ", y1)
             print("Outliers:\n", outliers)
 
-            current_use = self.data_ing.select_current_value(self.data['Local Outliers Factor'])
             x2 = current_use['tag'].values
             y2 = current_use['strom'].values
-            print("Heutige Verbrauch:\n", current_use)
-
+            print("X2: ", x2, " Y2: ", y2)
+            print("Current use table:\n", current_use)
             fig = self.graph_algo_dict['Local Outliers Factor'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2, pred=x_pred,
                                                                      algo_name='Local Outliers Factor')
             self.graph_algo_dict['Local Outliers Factor'].on_update_canvas(fig=fig)
+
+            self.check_current_prediction(current_use) # entscheide, ob der Wert zu warnen ist oder nicht
         else:
             self.rgrp['Local Outliers Factor']['state'] = 'DISABLE'
             print(self.rgrp['Local Outliers Factor']['state'])
@@ -217,11 +237,21 @@ class MonitorringControl:
             df2 = self.data_ing.on_getting_data_from_server(df)
             print("DATEN nach der Gruppierung: \n", df2)
 
-            X = self.data_ing.split_for_sasis(df2)
-            x_pred = self.model_isof.predict_isolfo(X)
+            print("len von df2 (Gruppiert): ", len(df2))
+
+            current_use = self.data_ing.select_current_value(df2)
+            print("Heutige Verbrauch:\n", current_use)
+            print("Len of Current: ", len(current_use))
+
+            X = self.data_ing.split_for_sasis(current_use)
+            x_pred = self.model_one.predict_one_csvm(X)
             print("Prediction: ", x_pred)
 
-            self.data['Isolation Forest'] = self.data_ing.on_predictinng_new_value(X[:, 0], x_pred, self.data[
+            current_use = self.data_ing.after_train_or_predict_data(current_use, x_pred)
+
+            print("current use modified: ", current_use)
+
+            self.data['Isolation Forest'] = self.data_ing.on_actualize_data_dict(current_use, self.data[
                 'Isolation Forest'])
             x = self.data['Isolation Forest']['tag'].values
             y = self.data['Isolation Forest']['strom'].values
@@ -232,14 +262,15 @@ class MonitorringControl:
             y1 = outliers.strom.values
             print("Outliers:\n", outliers)
 
-            current_use = self.data_ing.select_current_value(self.data['Isolation Forest'])
             x2 = current_use['tag'].values
             y2 = current_use['strom'].values
-            print("Heutige Verbrauch:\n", current_use)
-
+            print("X2: ", x2, " Y2: ", y2)
+            print("Current use table:\n", current_use)
             fig = self.graph_algo_dict['Isolation Forest'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2, pred=x_pred,
                                                                 algo_name='Isolation Forest')
             self.graph_algo_dict['Isolation Forest'].on_update_canvas(fig=fig)
+
+            self.check_current_prediction(current_use)
         else:
             self.rgrp['Isolation Forest']['state'] = 'DISABLE'
             print(self.rgrp['Isolation Forest']['state'])
@@ -256,11 +287,21 @@ class MonitorringControl:
             df2 = self.data_ing.on_getting_data_from_server(df)
             print("DATEN nach der Gruppierung: \n", df2)
 
-            X = self.data_ing.split_for_sasis(df2)
-            x_pred = self.model_ellipenv.predict_ellipenv(X)
+            print("len von df2 (Gruppiert): ", len(df2))
+
+            current_use = self.data_ing.select_current_value(df2)
+            print("Heutige Verbrauch:\n", current_use)
+            print("Len of Current: ", len(current_use))
+
+            X = self.data_ing.split_for_sasis(current_use)
+            x_pred = self.model_one.predict_one_csvm(X)
             print("Prediction: ", x_pred)
 
-            self.data['Elliptic Envelope'] = self.data_ing.on_predictinng_new_value(X[:, 0], x_pred, self.data[
+            current_use = self.data_ing.after_train_or_predict_data(current_use, x_pred)
+
+            print("current use modified: ", current_use)
+
+            self.data['Elliptic Envelope'] = self.data_ing.on_actualize_data_dict(current_use, self.data[
                 'Elliptic Envelope'])
             x = self.data['Elliptic Envelope']['tag'].values
             y = self.data['Elliptic Envelope']['strom'].values
@@ -269,16 +310,18 @@ class MonitorringControl:
             outliers = self.data_ing.detect_outliers(self.data['Elliptic Envelope'])
             x1 = outliers.tag.values
             y1 = outliers.strom.values
+            print("X1: ", x1, " Y1: ", y1)
             print("Outliers:\n", outliers)
 
-            current_use = self.data_ing.select_current_value(self.data['Elliptic Envelope'])
             x2 = current_use['tag'].values
             y2 = current_use['strom'].values
-            print("Heutige Verbrauch:\n", current_use)
+            print("Current use table:\n", current_use)
 
             fig = self.graph_algo_dict['Elliptic Envelope'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2, pred=x_pred,
-                                                                 algo_name='Isolation Forest')
+                                                                 algo_name='Elliptic Envelope')
             self.graph_algo_dict['Elliptic Envelope'].on_update_canvas(fig=fig)
+
+            self.check_current_prediction(current_use)
         else:
             self.rgrp['Elliptic Envelope']['state'] = 'DISABLE'
             print(self.rgrp['Elliptic Envelope']['state'])
@@ -295,11 +338,21 @@ class MonitorringControl:
             df2 = self.data_ing.on_getting_data_from_server(df)
             print("DATEN nach der Gruppierung: \n", df2)
 
-            X = self.data_ing.split_for_sasis(df2)
+            print("len von df2 (Gruppiert): ", len(df2))
+
+            current_use = self.data_ing.select_current_value(df2)
+            print("Heutige Verbrauch:\n", current_use)
+            print("Len of Current: ", len(current_use))
+
+            X = self.data_ing.split_for_sasis(current_use)
             x_pred = self.model_one.predict_one_csvm(X)
             print("Prediction: ", x_pred)
 
-            self.data['One Class SVM'] = self.data_ing.on_predictinng_new_value(X[:, 0], x_pred, self.data[
+            current_use = self.data_ing.after_train_or_predict_data(current_use, x_pred)
+
+            print("current use modified: ", current_use)
+
+            self.data['One Class SVM'] = self.data_ing.on_actualize_data_dict(current_use, self.data[
                 'One Class SVM'])
             x = self.data['One Class SVM']['tag'].values
             y = self.data['One Class SVM']['strom'].values
@@ -310,14 +363,14 @@ class MonitorringControl:
             y1 = outliers.strom.values
             print("Outliers:\n", outliers)
 
-            current_use = self.data_ing.select_current_value(self.data['One Class SVM'])
             x2 = current_use['tag'].values
             y2 = current_use['strom'].values
-            print("Heutige Verbrauch:\n", current_use)
-
+            print("Current use table:\n", current_use)
             fig = self.graph_algo_dict['One Class SVM'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2, pred=x_pred,
-                                                             algo_name='Isolation Forest')
+                                                             algo_name='One Class SVM')
             self.graph_algo_dict['One Class SVM'].on_update_canvas(fig=fig)
+
+            self.check_current_prediction(current_use)
         else:
             self.rgrp['One Class SVM']['state'] = 'DISABLE'
             print(self.rgrp['One Class SVM']['state'])
@@ -331,15 +384,37 @@ class MonitorringControl:
         self.model_isof.train_isolfo(X)
         self.model_lof.train_locoufac(X)
         self.model_one.train_one_csvm(X)
-                                                    # dann probiere eine kleine Vorhersage damit
-                                                    # (Normalerweise nicht empfohlen)
+                                                   # dann probiere eine kleine Vorhersage damit
+                                                   # (Normalerweise nicht empfohlen)
         epred = self.model_ellipenv.predict_ellipenv(X)
         ipred = self.model_isof.predict_isolfo(X)
         lpred = self.model_lof.predict_locoufac(X)
         opred = self.model_one.predict_one_csvm(X)
-                                                     # füge eine neue Spalte hinzu,
-                                                     # welche die vorhergesagenen Daten erhält
-        self.data['Elliptic Envelope'] = self.data_ing.after_trainig_data(tmp_df, epred)
-        self.data['Isolation Forest'] = self.data_ing.after_trainig_data(tmp_df, ipred)
-        self.data['Local Outliers Factor'] = self.data_ing.after_trainig_data(tmp_df, lpred)
-        self.data['One Class SVM'] = self.data_ing.after_trainig_data(tmp_df, opred)
+                                                   # füge eine neue Spalte hinzu,
+                                                   # welche die vorhergesagenen Daten erhält
+        self.data['Elliptic Envelope'] = self.data_ing.after_train_or_predict_data(tmp_df, epred)
+        self.data['Isolation Forest'] = self.data_ing.after_train_or_predict_data(tmp_df, ipred)
+        self.data['Local Outliers Factor'] = self.data_ing.after_train_or_predict_data(tmp_df, lpred)
+        self.data['One Class SVM'] = self.data_ing.after_train_or_predict_data(tmp_df, opred)
+
+    def check_current_prediction(self, df):
+        """
+            Die Methode Sendet den Wert an die angemeldeten Klienten zu seinem Topic:
+            Hinweise: der zu sendende Wert must von folgenden Typ sein: float,str, bytearray, int or None
+            ansonstens wird folgende Folgende Fehler geworfen:
+            "    raise TypeError('payload must be a string, bytearray, int, float or None.')
+                    TypeError: payload must be a string, bytearray, int, float or None."
+            Der Wert in df wird in einer List bzw. Array gespeichert. So wird der msg[0] gebraucht, um
+            den float-Inhalt zu senden
+        :param df:
+        :return:
+        """
+        if df['vorhersage'].values == -1:
+            print("Outlier... ")
+            if df['strom'].values > 4019.59:
+                print("Zu warnen... ")
+                msg = df['strom'].values
+                self.publisher.on_connect_to_broker(broker=self.broker, port=1883, alive=65)  # sende per MQTT
+                self.publisher.on_publishing(topic=self.topic, msg=str(msg[0]), qos=1)
+            else:
+                print(" Wird ingnoriert...")

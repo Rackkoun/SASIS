@@ -7,12 +7,8 @@
              append df: https://www.geeksforgeeks.org/python-pandas-dataframe-append/
              https://stackoverflow.com/questions/46343773/add-to-a-dataframe-as-i-go-with-datetime-index
 """
-import numpy as np
 import datetime as dt
 import pandas as pd
-from model.algorithms.onclass import OneCSVM
-from model.managedata.testdata import TestDataGenerator
-from database.postgresdb import PostgreSQLDatabase as server
 
 
 class DataProcessing:
@@ -37,21 +33,12 @@ class DataProcessing:
         X1 = df.iloc[:, [0, 1]].values
         return X1
 
-    def after_trainig_data(self, df, predict_set):
+    def after_train_or_predict_data(self, df, predict_set):
         df['vorhersage'] = predict_set
         return df
 
-    def on_predictinng_new_value(self, new_values, prediction, old_df):
-        date = dt.date.today()
-        tmp = pd.DataFrame(columns=['strom'], index=pd.to_datetime([date]))
-        tmp['strom'] = new_values
-        tmp['tag'] = tmp.index.day
-        tmp['monat'] = tmp.index.month
-        tmp['jahr'] = tmp.index.year
-        tmp['wochentag'] = tmp.index.weekday_name
-
-        tmp['vorhersage'] = prediction
-        old_df = old_df.append(tmp)
+    def on_actualize_data_dict(self, current_df, old_df):
+        old_df = old_df.append(current_df)
         old_df = old_df.sort_index(axis=0)
 
         return old_df
@@ -62,23 +49,40 @@ class DataProcessing:
         return out
 
     def select_current_value(self, df):
-        return df[df.index.date == dt.date.today()]
+        print("Before, len: ", len(df))
+        current = df[df.index.date == dt.date.today()]
+        print("After, len: ", len(current))
+        return current
 
+#
 # if __name__=='__main__':
 #     test = TestDataGenerator()
 #     ing = DataProcessing()
 #     algo = OneCSVM()
 #
 #     db = server()
+#     #f = './res/config/dbconfig.ini'
+#     #conn = db.in_connecting(file_name=f)
 #     data = test.on_create_test_data('2019-04-01', '2019-07-01', 'D', .3)
 #     X = ing.split_for_sasis(data)
 #     algo.train_one_csvm(X)
 #     pred0 = algo.predict_one_csvm(X)
-#     data2 = ing.after_trainig_data(data, pred0)
+#     data2 = ing.after_train_or_predict_data(data, pred0)
 #     x = [[4217.45, 5]]
 #
 #     pred = algo.predict_one_csvm(x)
-#     data2 = ing.on_predictinng_new_value(4217.45, pred, data2)
+#     data2 = ing.on_actualize_data_dict(4217.45, pred, data2)
 #     outliers = ing.detect_outliers(data2)
 #     dd = test.make_quick_gen()
-#     print(dd.head())
+#
+#     X0 = ing.split_for_sasis(dd)
+#     algo.train_one_csvm(X0)
+#     predd = algo.predict_one_csvm(X0)
+#     d0 = ing.after_train_or_predict_data(dd, predd)
+#
+#     out0 = ing.detect_outliers(d0)
+#     a = out0['2019-07-15':]
+#     ing.check_current_prediction(a)
+#     print(a['vorhersage'])
+#     #ds = db.read_db_content(conn)
+#     #print(ds)

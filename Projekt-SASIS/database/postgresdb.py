@@ -129,8 +129,8 @@ class PostgreSQLDatabase:
         print(frame.head(3))
 
         return frame
-
-
+#
+#
 # if __name__ == "__main__":
 #     db = PostgreSQLDatabase()
 #     connection = db.in_connecting(db.path)
@@ -144,4 +144,4 @@ class PostgreSQLDatabase:
 #     df['tag'] = df.index.day
 #     print(data.head(), "\n", data.dtypes, "\nstrom: ", data.strom.values, " type: ", type(data.strom.values),"\nshape: ", data.strom.values.shape)
 #
-#     print(df)
+#     print("Len of grouped df: ", len(df))

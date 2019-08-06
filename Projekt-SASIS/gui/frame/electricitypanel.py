@@ -1,5 +1,4 @@
 import os.path
-import numpy as np
 from tkinter import IntVar
 import time
 from threading import Thread
@@ -43,9 +42,7 @@ class ApplianceDeviceControl:
         self.dict_btn = {}
         self.dict_tk_var = {}
 
-        #self.login_info = DBConfiguration()
         self.connection = server()
-        #print("login info: ", self.login_info)
         pass
 
     def get_panel(self):
@@ -213,8 +210,7 @@ class ApplianceDeviceControl:
                 self.dict_tk_var['WZ'].set(0)  # der TK-Var auf 0 zurücksetzen
                 print("TK VAR REINIT TO: ", self.dict_tk_var['WZ'].get())
                 print("STATS OF DICT NOW 2: ", self.thread_dict['WZ'].is_alive())
-                print("VERBRAUCH IN WZ: ", during ,
-                      "watt min")  # der Verbrauch in der DB speichern
+                print("VERBRAUCH IN WZ: ", during, "watt min")  # der Verbrauch in der DB speichern
 
     def on_updated_01(self):
         if self.dict_btn['SZ']['text'] == 'OFF':
@@ -723,7 +719,7 @@ class ApplianceDeviceControl:
     def on_inc05(self, state):
         while self.dict_btn['WZ + K + KP4']['state'] == state == 'ON':
             self.dict_tk_var['WZ + K + KP4'].set(self.dict_tk_var['WZ + K + KP4'].get() + 1)
-            print('WZ + K + KP4', ":  values - - > ", self.dict_tk_var['WZ + k + KP4'].get())
+            print('WZ + K + KP4', ":  values - - > ", self.dict_tk_var['WZ + K + KP4'].get())
             time.sleep(2)
 
     def on_thread_05(self, state):

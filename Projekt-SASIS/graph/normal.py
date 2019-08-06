@@ -79,27 +79,19 @@ class SGraphTK:
         sb.boxplot(x=x, y=y, data=df, hue=h, ax=ax)
         return fig
 
-    def on_draw_hist(self, x, y, data):
+    def on_draw_bar(self, x, y, h, data):
         """
-        ...
+
         :param x:
         :param y:
-        :param xlab:
-        :param ylab:
-        :param lincolor:
-        :param linstyle:
-        :param figcol:
+        :param data:
         :return:
         """
-        # frame = Frame(master=self.gmaster)
         fig = plt.Figure(figsize=(4.4, 2.7), dpi=80, facecolor='white', constrained_layout=True)
         ax = fig.add_subplot(111)
-        # ax = self.on_create_fig(figcol)
-        ax.hist(x=x, height=y, data=data, label='strom')
+        sb.catplot(x=x, y=y, hue=h, data=data, kind='bar', ax=ax)
+        ax.set_xlabel('Wochentage')
         ax.set_ylabel('Stromverbrauch (in w min)')
         ax.set_title('Wöchentliche Verbauch')
-        #ax.set_xticks(x + str(1))
-        ax.set_xticklabels(x, rotation=30)
-        ax.legend(loc='best')
 
         return fig

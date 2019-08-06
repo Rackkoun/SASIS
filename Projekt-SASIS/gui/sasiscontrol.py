@@ -62,7 +62,7 @@ class SASISCommandInterface:
         self.graph_tab.on_add_graph_up(grp_style='line', col=0, row=0, px=3, py=3)
         self.graph_tab.on_add_graph_up(grp_style='scatter', col=1, row=0, px=3, py=3)
         self.graph_tab.on_add_graph_up(grp_style='box', col=2, row=0, px=3, py=3)
-        self.graph_tab.on_add_graph_up(grp_style='hist', col=3, row=0, px=3, py=3)
+        self.graph_tab.on_add_graph_up(grp_style='bar', col=3, row=0, px=3, py=3)
 
         self.graph_tab.on_create_frame_down_lf(frame_name='Darstellung mit trainierten Daten', col=1, row=1, colpad=5,
                                                rowpad=5)
@@ -76,8 +76,6 @@ class SASISCommandInterface:
                                          x1=[], y1=[], x2=[], y2=[])
 
         self.wtab.pack(expand=1, fill='both')
-
-        # self.elect_panel_tab.show_all_tk_var()
         pass
 
     def start_app(self):
