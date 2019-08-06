@@ -51,6 +51,9 @@ class SASISCommandInterface:
 
         self.wtab.add(self.graph_tab.master, text='Graphenansicht')
 
+        self.graph_tab.on_create_labelframe('Aktualisierung der oberen Graphen', 0, 0, 8, 10, 'NW')
+        self.graph_tab.add_btn(0, 0, 8, 8)
+
         self.graph_tab.on_create_labelframe('Maschinelles Lernen Algorithmen', 0, 1, 8, 10, 'NW')
         self.graph_tab.add_rbtn('Isolation Forest', 1, 0, 0, 8, 8)
         self.graph_tab.add_rbtn('Elliptic Envelope', 2, 0, 1, 8, 8)

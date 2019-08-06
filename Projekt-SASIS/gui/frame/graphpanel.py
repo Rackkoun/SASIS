@@ -3,9 +3,11 @@ Created on 23.07.2019 at 18:10
 @author: Ruphus
 
 """
+import time
 from tkinter import IntVar
 from tkinter.ttk import Frame, LabelFrame
 from gui.button.sradiobutton import SASISRadioButton as rsButton
+from gui.button.sbutton import SASISActionButton as sbutton
 from graph.normal import SGraphTK as sgraph
 from graph.predictions import SGraphMLTK as mlgraph
 
@@ -41,7 +43,7 @@ class MonitorringControl:
         self.graph_down = None           # Untere Darstellung
         self.tmp = None
         self.tk_var = IntVar()           # Var für Radio-ButtonAuswahl
-
+        self.graph_btn = None
         self.config_file = './res/config/dbconfig.ini'
         self.graph_algo_dict = {}        # speiche Graphen für trainierten Daten
         self.graph_norm_dict = {}        # speiche Graphen für nicht trainierten Daten
@@ -102,6 +104,13 @@ class MonitorringControl:
         self.rgrp[algo_name] = r_btn
 
         print("rdio state: ", self.rgrp[algo_name]['state'])
+
+    def add_btn(self, col, row, colpad, rowpad):
+        self.graph_btn = sbutton(root=self.lf).get_btn()
+        self.graph_btn.configure(text='Actualized')
+        self.graph_btn.configure(state='READY')
+        self.graph_btn.configure(command= self.on_actualized_graph_up)
+        self.graph_btn.grid(column=col, row=row, padx=rowpad, pady=colpad, sticky='NEWS')
 
     def on_add_graph_up(self, grp_style, col, row, px, py):
         tmp_frame = Frame(master=self.graph_up)
@@ -418,3 +427,66 @@ class MonitorringControl:
                 self.publisher.on_publishing(topic=self.topic, msg=str(msg[0]), qos=1)
             else:
                 print(" Wird ingnoriert...")
+
+    def on_actualized_graph_up(self):
+        print("Start STATE: ", self.graph_btn['state'])
+        if self.graph_btn['state'] == 'READY':
+            self.graph_btn.configure(text='Actualizing...')
+            self.graph_btn.configure(state='RUNNING')
+
+            connection = self.server.in_connecting(self.config_file)
+            df = self.server.read_db_content(connection)
+
+            grp = df.groupby('datum')['strom'].sum()  # erzeuge ein Serie-Objekt
+            print(grp.values)
+            reconverted_index = pd.to_datetime(grp.index)
+            new_df = pd.DataFrame(grp.values, columns=['strom'], dtype=np.float, index=reconverted_index)
+            new_df.index.name = None
+            new_df['tag'] = new_df.index.day
+            new_df['monat'] = new_df.index.month
+            new_df['jahr'] = new_df.index.year
+            new_df['wochentag'] = new_df.index.weekday_name
+
+            print(new_df)
+            x = new_df['tag'].values
+            y = new_df['strom'].values
+            print("Y: ", y, 'type: ', y.dtype)
+
+            xb = new_df['wochentag'].values.tolist()
+            hb = new_df['monat'].values
+            print("xb: ", xb, " type: ", type(xb))
+            print("hb: ", hb)
+
+            for style in self.graph_norm_dict.keys():
+
+                if str(style) == 'line':
+                    print("STYLE exists")
+                    fig = self.graph_norm_dict[str(style)].on_draw_line(x=x, y=y, xlab='Tage (In Integer)',
+                                                                       ylab='Stromverbrauch (in w min)', linstyle='solid',
+                                                                       lincolor='r')
+                    self.graph_norm_dict[str(style)].put_graph_on_canvas(fig=fig)
+                    print(style, " Graph actualized")
+
+                if str(style) == 'scatter':
+                    print("STYLE exists")
+                    fig = self.graph_norm_dict[str(style)].on_draw_scatter(x=x, y=y, d=new_df, h=xb)
+                    self.graph_norm_dict[str(style)].put_graph_on_canvas(fig=fig)
+                    print(style, " Graph actualized")
+
+                if str(style) == 'box':
+                    print("STYLE exists")
+                    fig = self.graph_norm_dict[str(style)].on_draw_box(x=xb, y=y, df=new_df, h='wochentag')
+                    self.graph_norm_dict[str(style)].put_graph_on_canvas(fig=fig)
+                    print(style, " Graph actualized")
+
+                if str(style) == 'bar':
+                    print("STYLE exists")
+                    fig = self.graph_norm_dict[str(style)].on_draw_bar(x=xb, y=y, h='monat', data=new_df)
+                    self.graph_norm_dict[str(style)].put_graph_on_canvas(fig=fig)
+                    print(style, " Graph actualized")
+
+            time.sleep(1.8)
+            self.graph_btn.configure(state='READY')
+            print("BTN STATE: ", self.graph_btn['state'])
+            self.graph_btn.configure(text='Actualized')
+            print("BTN TEXT: ", self.graph_btn['text'])
