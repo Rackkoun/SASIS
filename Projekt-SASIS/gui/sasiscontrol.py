@@ -3,7 +3,7 @@ from tkinter.ttk import Notebook
 
 from gui.frame.electricitypanel import ApplianceDeviceControl as elecpanel
 from gui.frame.graphpanel import MonitorringControl as monitorpanel
-
+from gui.frame.databasepanel import DatabaseContent as dbpanel
 """ Diese Klasse stellt das Interface fuer die Kontrolle des gesamten Anwendungssystems dar.
 """
 
@@ -18,6 +18,7 @@ class SASISCommandInterface:
         self.wtab = Notebook()  # Reiter-Erstellung in dem Hauptfenster
         self.elect_panel_tab = elecpanel(self.wtab)  # Erste Reiteransicht: Strom und Bildplan
         self.graph_tab = monitorpanel(self.wtab)  # Zweite Reiteransicht: Graphen und Algorithmen fuer die Darstellung
+        self.db_tab = dbpanel(self.wtab)
 
         self.on_create_window()  # Initialisierung aller Elementen in Reitern
 
@@ -30,6 +31,7 @@ class SASISCommandInterface:
         """
         self.wmain.title('SASIS Control Interface')
         self.wmain.resizable(False, False)
+
         print("Width: ", self.wmain.winfo_screenwidth(), "height: ", self.wmain.winfo_screenheight())
         self.wtab.add(self.elect_panel_tab.get_panel(), text="Steuerungsansicht")
         self.elect_panel_tab.on_create_labelframe('Steuerungspanel', 0, 0, 8, 10, 'N')
@@ -78,6 +80,22 @@ class SASISCommandInterface:
         self.graph_tab.on_add_graph_down(algo_name='One Class SVM', col=4, row=0, px=3, py=3, x=[], y=[],
                                          x1=[], y1=[], x2=[], y2=[])
 
+        self.wtab.add(self.db_tab.master, text='Datenbankansicht')
+
+        self.db_tab.on_create_labelframe('Datebank Aktion-Button', col=0, row=0, px=8, py=8, pos='NW')
+        self.db_tab.add_btn(col=0, row=0, colpad=8, rowpad=8)
+
+        self.db_tab.on_create_labelframe('Datenbankinhalt', col=1, row=0, px=5, py=8, pos='E')
+        self.db_tab.on_create_label('ID', col=1, row=0, colpad=3, rowpad=5, pos='N')
+        self.db_tab.on_create_label('STROMVERBRAUCH', col=2, row=0, colpad=3, rowpad=5, pos='N')
+        self.db_tab.on_create_label('DATUM', col=3, row=0, colpad=3, rowpad=5, pos='N')
+
+        self.db_tab.on_create_field(col=1, row=1, px=8, py=8, cspan=3)
+
+        self.db_tab.on_create_labelframe('Datenbankstatistiken: ', col=2, row=0, px=8, py=8, pos='N')
+        self.db_tab.on_create_label('min Verbrauch: ', col=2, row=0, colpad=8, rowpad=8, pos='N')
+        self.db_tab.on_create_label('max Verbrauch: ', col=2, row=1, colpad=8, rowpad=8, pos='N')
+        self.db_tab.on_create_label('akt Verbrauch: ', col=2, row=2, colpad=8, rowpad=8, pos='N')
         self.wtab.pack(expand=1, fill='both')
         pass
 

@@ -53,6 +53,7 @@ class SGraphTK:
         ax.plot(x, y, color=lincolor, linestyle=linstyle)
         ax.set_xlabel(xlab)
         ax.set_ylabel(ylab)
+        ax.set_title('Täglicher Stromverbauch')
 
         return fig
 
@@ -70,6 +71,10 @@ class SGraphTK:
         fig = plt.Figure(figsize=(4.4, 2.7), dpi=80, facecolor='white', constrained_layout=True)
         ax = fig.add_subplot(111)
         sb.scatterplot(x=x, y=y, hue=h, data=d, ax=ax)
+        ax.set_xlabel('Tage (in Integer)')
+        ax.set_ylabel('Stromverbrauch (in w min)')
+        ax.set_title('Wöchentliche Stromverbauch')
+
         return fig
 
     # https://stackoverflow.com/questions/31594549/how-do-i-change-the-figure-size-for-a-seaborn-plot
@@ -77,6 +82,11 @@ class SGraphTK:
         fig = plt.Figure(figsize=(4.4, 2.7), dpi=80, facecolor='white', constrained_layout=True)
         ax = fig.add_subplot(111)
         sb.boxplot(x=x, y=y, data=df, hue=h, ax=ax)
+        ax.set_xlabel('Wochentage')
+        ax.set_ylabel('Stromverbrauch (in w min)')
+        ax.set_title('Monatlicher Stromverbauch')
+        ax.set_xticklabels(labels=x, rotation=15)
+
         return fig
 
     def on_draw_bar(self, x, y, h, data):
@@ -92,6 +102,7 @@ class SGraphTK:
         sb.catplot(x=x, y=y, hue=h, data=data, kind='bar', ax=ax)
         ax.set_xlabel('Wochentage')
         ax.set_ylabel('Stromverbrauch (in w min)')
-        ax.set_title('Wöchentliche Verbauch')
+        ax.set_title('Monatlicher Stromverbauch')
+        ax.set_xticklabels(labels=x, rotation=15)
 
         return fig
