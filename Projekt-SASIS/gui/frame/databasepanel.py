@@ -4,28 +4,22 @@ Created on 07.08.2019 at 00:07
 """
 
 import time
-import pandas as pd
-import numpy as np
-from tkinter import INSERT, WORD, END
+from tkinter import INSERT, WORD, END, Button
 from tkinter.scrolledtext import ScrolledText as scrollT
 from tkinter.ttk import Frame, LabelFrame, Label
 from gui.button.sbutton import SASISActionButton as sbutton
 
-from threading import Thread
-from queue import Queue
-
 from database.postgresdb import PostgreSQLDatabase as DB
 from model.managedata.ingeneering import DataProcessing
+from model.objects.message_box import MessageTip
 
 class DatabaseContent:
 
     def __init__(self, root):
         self.master = Frame(master=root)
         self.labelframe = None
-        self.label = None
         self.btn = None
 
-        self.data = None
         self.db_max = None
         self.db_min = None
         self.db_current = None
@@ -38,6 +32,7 @@ class DatabaseContent:
         self.db = DB()
         self.config_file = './res/config/dbconfig.ini'
 
+
     def on_create_labelframe(self, name, col, row, px, py, pos):
         self.labelframe = LabelFrame(master=self.master, text=name)
         self.labelframe.grid(column=col, row=row, padx=px, pady=py, sticky=pos)
@@ -45,23 +40,24 @@ class DatabaseContent:
     def add_btn(self, col, row, colpad, rowpad):
         self.btn = sbutton(root=self.labelframe).get_btn()
         self.btn.configure(text='LOAD')
-        self.btn.configure(state='READY')
-        self.btn.configure(command= self.on_writing_in_the_field)
+        self.btn.configure(state='normal')
+        self.btn.configure(command=self.on_writing_in_the_field)
+        MessageTip(gui=self.btn, msg='Click here to pull the db')
+        #tip.show()
         self.btn.grid(column=col, row=row, padx=rowpad, pady=colpad, sticky='W')
 
     def on_create_label(self, label_name, col, row, colpad, rowpad, pos):
         lab = Label(master=self.labelframe, text=label_name)
         lab.grid(column=col, row=row, padx=colpad, pady=rowpad, sticky=pos)
 
-
     def on_create_field(self, col, row, px, py, cspan):
         self.text_field = scrollT(master=self.labelframe, width=self.field_width, height=self.field_height, wrap=WORD)
         self.text_field.grid(column=col, row=row, padx=px, pady=py, columnspan=cspan)
 
     def on_writing_in_the_field(self):
-        if self.btn['state'] == 'READY':
+        if self.btn['state'] == 'normal':
             self.btn['text'] = 'LOADING...'
-            self.btn['state'] = 'RUNNING'
+            self.btn['state'] = 'active'
             print(self.btn['text'], self.btn['state'])
 
             self.write_all()
@@ -69,13 +65,13 @@ class DatabaseContent:
             self.btn.bind('<Button-1>', self.on_refresh(self.btn['state']))
 
     def on_refresh(self, state):
-        if self.btn['state'] == state == 'READY':
+        if self.btn['state'] == state == 'normal':
             self.btn['text'] = 'LOADING...'
-            self.btn['state'] = 'RUNNING'
+            self.btn['state'] = 'active'
             print(self.btn['state'])
         else:
             self.btn['text'] = 'ACTUALIZED'
-            self.btn['state'] = 'READY'
+            self.btn['state'] = 'normal'
             print(self.btn['state'])
 
     def format_date(self, d):
@@ -99,7 +95,7 @@ class DatabaseContent:
         self.print_db_stats(df)
         for i, s, d in zip(id, strom, datum):
             self.text_field.insert(INSERT, '   ' + str(i) + '\t\t' + str(s) + "\t    " + str(
-            self.format_date(d)) + '\n')
+                self.format_date(d)) + '\n')
             print(i, "\t", s, "\t", d)
         time.sleep(2)
 
@@ -110,7 +106,9 @@ class DatabaseContent:
         df_min = new_df[new_df['strom'] == min['strom']]
         df_max = new_df[new_df['strom'] == max['strom']]
 
-        text1 = ' {} Watt \t\t Datum:   {}, den {}   {}   {}'.format(df_min['strom'][0], df_min['wochentag'][0], df_min['tag'][0], df_min.index[0].strftime('%b'), df_min['jahr'][0])
+        text1 = ' {} Watt \t\t Datum:   {}, den {}   {}   {}'.format(df_min['strom'][0], df_min['wochentag'][0],
+                                                                     df_min['tag'][0], df_min.index[0].strftime('%b'),
+                                                                     df_min['jahr'][0])
 
         text2 = ' {} Watt \t\t Datum:   {}, den {}   {}   {}'.format(df_max['strom'][0], df_max['wochentag'][0],
                                                                      df_max['tag'][0], df_max.index[0].strftime('%b'),
@@ -127,9 +125,3 @@ class DatabaseContent:
 
         self.db_current = Label(master=self.labelframe, text=text3)
         self.db_current.grid(column=3, row=2, padx=8, pady=8, sticky='N', columnspan=3)
-        #print(self.db_min)
-        #print("Date:", self.db_min.index.dtype, " Values: ", self.db_min.index[0].strftime('%b'))
-        #index_min = pd.to_datetime(self.db_min.index)   self.db_min.index.strftime("%b"),
-        #print(self.db_min['wochentag'][0], ", ", self.db_min['tag'][0], " ", "  ", self.db_min['jahr'][0], "  Verbrauch: ", self.db_min['strom'][0])
-        #self.db_max = new_df.max()
-        #print(self.db_max)

@@ -6,10 +6,11 @@ from queue import Queue
 from tkinter.ttk import Frame, LabelFrame, Label
 from PIL import Image, ImageTk
 from gui.button.sbutton import SASISActionButton as sButton
-from model.elementdict.labelmodel import LabelModel
-from model.constants.pictures import HousePlan
+from model.objects.labelmodel import LabelModel
+from model.objects.pictures import HousePlan
 from database.postgresdb import PostgreSQLDatabase as server
 
+from model.objects.message_box import MessageTip
 """
     @author: Ruphus
     Created on 20.07.2019
@@ -57,6 +58,8 @@ class ApplianceDeviceControl:
 
     def add_btn(self, col, row, px, py, room_name):
         btn = sButton(root=self.panel_control_lf).get_btn()
+        MessageTip(gui=btn, msg='Click again to change the button state and \n'
+                                'the animate the picture in the right panel')
         self.set_btn_command(room_name=room_name, btn=btn)
         btn.grid(column=col, row=row, padx=px, pady=py)
 
@@ -165,7 +168,8 @@ class ApplianceDeviceControl:
     def on_updated_00(self):
         if self.dict_btn['WZ']['text'] == 'OFF':  # prüfen den aktuellen Text im Button
             self.dict_btn['WZ']['text'] = 'ON'  # dann ändere ihn mit dem hier
-            self.dict_btn['WZ'].configure(state='ON')  # dasselbe auch für den Button-Zustand
+            self.dict_btn['WZ'].configure(state='active')  # dasselbe auch für den Button-Zustand
+            self.dict_btn['WZ'].configure(bg='#ff1a1a')
             print(self.dict_btn['WZ']['state'])
             self.on_updated_action('WZ')  # rufe die Methode für dementsprechenden Raumname auf
 
@@ -174,7 +178,8 @@ class ApplianceDeviceControl:
 
         else:
             self.dict_btn['WZ']['text'] = 'OFF'  # sonst setze den Text
-            self.dict_btn['WZ']['state'] = 'OFF'  # und Button-Zustand in dem vorherigen Zustand zurück
+            self.dict_btn['WZ']['state'] = 'normal'  # und Button-Zustand in dem vorherigen Zustand zurück
+            self.dict_btn['WZ'].configure(bg='#00bfff')
             print("Last values of Va-00 = ", self.dict_tk_var['WZ'].get())  # prüfe der gepeicherte Wert in der TK-Var
 
             try:  # setzte das Bild auch auf dem ersten Zustand zurück
@@ -215,13 +220,16 @@ class ApplianceDeviceControl:
     def on_updated_01(self):
         if self.dict_btn['SZ']['text'] == 'OFF':
             self.dict_btn['SZ']['text'] = 'ON'
-            self.dict_btn['SZ'].configure(state='ON')
+            self.dict_btn['SZ'].configure(state='active')
+            self.dict_btn['SZ'].configure(bg='#ff1a1a')
+
             print(self.dict_btn['SZ']['state'])
             self.on_updated_action('SZ')
             self.dict_btn['SZ'].bind('<Button-1>', self.on_thread_01(self.dict_btn['SZ']['state']))
         else:
             self.dict_btn['SZ']['text'] = 'OFF'
-            self.dict_btn['SZ']['state'] = 'OFF'
+            self.dict_btn['SZ']['state'] = 'normal'
+            self.dict_btn['SZ'].configure(bg='#00bfff')
             print("Last values of Va-01 = ", self.dict_tk_var['SZ'].get())
 
             try:
@@ -260,13 +268,16 @@ class ApplianceDeviceControl:
     def on_updated_02(self):
         if self.dict_btn['WC']['text'] == 'OFF':
             self.dict_btn['WC']['text'] = 'ON'
-            self.dict_btn['WC'].configure(state='ON')
+            self.dict_btn['WC'].configure(state='active')
+            self.dict_btn['WC'].configure(bg='#ff1a1a')
+
             print(self.dict_btn['WC']['state'])
             self.on_updated_action('WC')
             self.dict_btn['WC'].bind('<Button-1>', self.on_thread_02(self.dict_btn['WC']['state']))
         else:
             self.dict_btn['WC']['text'] = 'OFF'
-            self.dict_btn['WC']['state'] = 'OFF'
+            self.dict_btn['WC']['state'] = 'normal'
+            self.dict_btn['WC'].configure(bg='#00bfff')
             print("Last values of Va-02 = ", self.dict_tk_var['WC'].get())
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
@@ -305,13 +316,16 @@ class ApplianceDeviceControl:
     def on_updated_03(self):
         if self.dict_btn['DUSCHE']['text'] == 'OFF':
             self.dict_btn['DUSCHE']['text'] = 'ON'
-            self.dict_btn['DUSCHE'].configure(state='ON')
+            self.dict_btn['DUSCHE'].configure(state='active')
+            self.dict_btn['DUSCHE'].configure(bg='#ff1a1a')
+
             print(self.dict_btn['DUSCHE']['state'])
             self.on_updated_action('DUSCHE')
             self.dict_btn['DUSCHE'].bind('<Button-1>', self.on_thread_03(self.dict_btn['DUSCHE']['state']))
         else:
             self.dict_btn['DUSCHE']['text'] = 'OFF'
-            self.dict_btn['DUSCHE']['state'] = 'OFF'
+            self.dict_btn['DUSCHE']['state'] = 'normal'
+            self.dict_btn['DUSCHE'].configure(bg='#00bfff')
             print("Last values of Va-03 = ", self.dict_tk_var['DUSCHE'].get())
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
@@ -350,13 +364,17 @@ class ApplianceDeviceControl:
     def on_updated_04(self):
         if self.dict_btn['WZ + K']['text'] == 'OFF':
             self.dict_btn['WZ + K']['text'] = 'ON'
-            self.dict_btn['WZ + K'].configure(state='ON')
+            self.dict_btn['WZ + K'].configure(state='active')
+            self.dict_btn['WZ + K'].configure(bg='#ff1a1a')
+
             print(self.dict_btn['WZ + K']['state'])
             self.on_updated_action('WZ + K')
             self.dict_btn['WZ + K'].bind('<Button-1>', self.on_thread_04(self.dict_btn['WZ + K']['state']))
         else:
             self.dict_btn['WZ + K']['text'] = 'OFF'
-            self.dict_btn['WZ + K']['state'] = 'OFF'
+            self.dict_btn['WZ + K']['state'] = 'normal'
+            self.dict_btn['WZ + K'].configure(bg='#00bfff')
+
             print("Last values of Va-04 = ", self.dict_tk_var['WZ + K'].get())
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
@@ -395,13 +413,16 @@ class ApplianceDeviceControl:
     def on_updated_05(self):
         if self.dict_btn['WZ + K + KP4']['text'] == 'OFF':
             self.dict_btn['WZ + K + KP4']['text'] = 'ON'
-            self.dict_btn['WZ + K + KP4'].configure(state='ON')
+            self.dict_btn['WZ + K + KP4'].configure(state='active')
+            self.dict_btn['WZ + K + KP4'].configure(bg='#ff1a1a')
+
             print(self.dict_btn['WZ + K + KP4']['state'])
             self.on_updated_action('WZ + K + KP4')
             self.dict_btn['WZ + K + KP4'].bind('<Button-1>', self.on_thread_05(self.dict_btn['WZ + K + KP4']['state']))
         else:
             self.dict_btn['WZ + K + KP4']['text'] = 'OFF'
-            self.dict_btn['WZ + K + KP4']['state'] = 'OFF'
+            self.dict_btn['WZ + K + KP4']['state'] = 'normal'
+            self.dict_btn['WZ + K + KP4'].configure(bg='#00bfff')
             print("Last values of Va-05 = ", self.dict_tk_var['WZ + K + KP4'].get())
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
@@ -440,13 +461,17 @@ class ApplianceDeviceControl:
     def on_updated_06(self):
         if self.dict_btn['WZ + K + WM4']['text'] == 'OFF':
             self.dict_btn['WZ + K + WM4']['text'] = 'ON'
-            self.dict_btn['WZ + K + WM4'].configure(state='ON')
+            self.dict_btn['WZ + K + WM4'].configure(state='active')
+            self.dict_btn['WZ + K + WM4'].configure(bg='#ff1a1a')
+
             print(self.dict_btn['WZ + K + WM4']['state'])
             self.on_updated_action('WZ + K + WM4')
             self.dict_btn['WZ + K + WM4'].bind('<Button-1>', self.on_thread_06(self.dict_btn['WZ + K + WM4']['state']))
         else:
             self.dict_btn['WZ + K + WM4']['text'] = 'OFF'
-            self.dict_btn['WZ + K + WM4']['state'] = 'OFF'
+            self.dict_btn['WZ + K + WM4']['state'] = 'normal'
+            self.dict_btn['WZ + K + WM4'].configure(bg='#00bfff')
+
             print("Last values of Va-06 = ", self.dict_tk_var['WZ + K + WM4'].get())
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
@@ -485,14 +510,18 @@ class ApplianceDeviceControl:
     def on_updated_07(self):
         if self.dict_btn['WZ + K + KP4 + WM4']['text'] == 'OFF':
             self.dict_btn['WZ + K + KP4 + WM4']['text'] = 'ON'
-            self.dict_btn['WZ + K + KP4 + WM4'].configure(state='ON')
+            self.dict_btn['WZ + K + KP4 + WM4'].configure(state='active')
+            self.dict_btn['WZ + K + KP4 + WM4'].configure(bg='#ff1a1a')
+
             print(self.dict_btn['WZ + K + KP4 + WM4']['state'])
             self.on_updated_action('WZ + K + KP4 + WM4')
             self.dict_btn['WZ + K + KP4 + WM4'].bind('<Button-1>',
                                                      self.on_thread_07(self.dict_btn['WZ + K + KP4 + WM4']['state']))
         else:
             self.dict_btn['WZ + K + KP4 + WM4']['text'] = 'OFF'
-            self.dict_btn['WZ + K + KP4 + WM4']['state'] = 'OFF'
+            self.dict_btn['WZ + K + KP4 + WM4']['state'] = 'normal'
+            self.dict_btn['WZ + K + KP4 + WM4'].configure(bg='#00bfff')
+
             print("Last values of Va-07 = ", self.dict_tk_var['WZ + K + KP4 + WM4'].get())
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
@@ -531,14 +560,18 @@ class ApplianceDeviceControl:
     def on_updated_08(self):
         if self.dict_btn['ALLE LICHTER EIN']['text'] == 'OFF':
             self.dict_btn['ALLE LICHTER EIN']['text'] = 'ON'
-            self.dict_btn['ALLE LICHTER EIN'].configure(state='ON')
+            self.dict_btn['ALLE LICHTER EIN'].configure(state='active')
+            self.dict_btn['ALLE LICHTER EIN'].configure(bg='#ff1a1a')
+
             print(self.dict_btn['ALLE LICHTER EIN']['state'])
             self.on_updated_action('ALLE LICHTER EIN')
             self.dict_btn['ALLE LICHTER EIN'].bind('<Button-1>',
                                                    self.on_thread_08(self.dict_btn['ALLE LICHTER EIN']['state']))
         else:
             self.dict_btn['ALLE LICHTER EIN']['text'] = 'OFF'
-            self.dict_btn['ALLE LICHTER EIN']['state'] = 'OFF'
+            self.dict_btn['ALLE LICHTER EIN']['state'] = 'normal'
+            self.dict_btn['ALLE LICHTER EIN'].configure(bg='#00bfff')
+
             print("Last values of Va-08 = ", self.dict_tk_var['ALLE LICHTER EIN'].get())
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
@@ -577,14 +610,17 @@ class ApplianceDeviceControl:
     def on_updated_09(self):
         if self.dict_btn['ALLE LICHTER AUS']['text'] == 'OFF':
             self.dict_btn['ALLE LICHTER AUS']['text'] = 'ON'
-            self.dict_btn['ALLE LICHTER AUS'].configure(state='ON')
+            self.dict_btn['ALLE LICHTER AUS'].configure(state='active')
+            self.dict_btn['ALLE LICHTER AUS'].configure(bg='#ff1a1a')
+
             print(self.dict_btn['ALLE LICHTER AUS']['state'])
             self.on_updated_action('ALLE LICHTER AUS')
             self.dict_btn['ALLE LICHTER AUS'].bind('<Button-1>',
                                                    self.on_thread_09(self.dict_btn['ALLE LICHTER AUS']['state']))
         else:
             self.dict_btn['ALLE LICHTER AUS']['text'] = 'OFF'
-            self.dict_btn['ALLE LICHTER AUS']['state'] = 'OFF'
+            self.dict_btn['ALLE LICHTER AUS']['state'] = 'normal'
+            self.dict_btn['ALLE LICHTER AUS'].configure(bg='#00bfff')
             print("Last values of Va-09 = ", self.dict_tk_var['ALLE LICHTER AUS'].get())
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
@@ -615,13 +651,16 @@ class ApplianceDeviceControl:
     def on_updated_10(self):
         if self.dict_btn['NICHST']['text'] == 'OFF':
             self.dict_btn['NICHST']['text'] = 'ON'
-            self.dict_btn['NICHST'].configure(state='ON')
+            self.dict_btn['NICHST'].configure(state='active')
+            self.dict_btn['NICHST'].configure(bg='#00bfff')
+
             print(self.dict_btn['NICHST']['state'])
             self.on_updated_action('NICHST')
             self.dict_btn['NICHST'].bind('<Button-1>', self.on_thread_10(self.dict_btn['NICHST']['state']))
         else:
             self.dict_btn['NICHST']['text'] = 'OFF'
-            self.dict_btn['NICHST']['state'] = 'OFF'
+            self.dict_btn['NICHST']['state'] = 'normal'
+            self.dict_btn['NICHST'].configure(bg='#00bfff')
             print("Last values of Va-10 = ", self.dict_tk_var['NICHST'].get())
             try:
                 img = Image.open(os.path.join(self.imgpath, self.plan['NICHST']))
@@ -643,7 +682,7 @@ class ApplianceDeviceControl:
     # https://stackoverflow.com/questions/11986005/better-way-to-get-results-from-multiple-threads
     # Thread: https://nitratine.net/blog/post/python-threading-basics/
     def on_inc00(self, state):
-        while self.dict_btn['WZ']['state'] == state == 'ON':
+        while self.dict_btn['WZ']['state'] == state == 'active':
             self.dict_tk_var['WZ'].set(self.dict_tk_var['WZ'].get() + 1)  # für die Inkrementierung
             self.queue.put(self.dict_tk_var['WZ'].get())  # Werte in der Warteschlage hinterlegen
             print('WZ', ":  values - - > ", self.dict_tk_var['WZ'].get())
@@ -659,7 +698,7 @@ class ApplianceDeviceControl:
         t00.start()
 
     def on_inc01(self, state):
-        while self.dict_btn['SZ']['state'] == state == 'ON':
+        while self.dict_btn['SZ']['state'] == state == 'active':
             self.dict_tk_var['SZ'].set(self.dict_tk_var['SZ'].get() + 1)
             self.queue.put(self.dict_tk_var['SZ'].get())
             print('SZ', ":  values - - > ", self.dict_tk_var['SZ'].get())
@@ -675,7 +714,7 @@ class ApplianceDeviceControl:
         t01.start()
 
     def on_inc02(self, state):
-        while self.dict_btn['WC']['state'] == state == 'ON':
+        while self.dict_btn['WC']['state'] == state == 'active':
             self.dict_tk_var['WC'].set(self.dict_tk_var['WC'].get() + 1)
             print('WC', ":  values - - > ", self.dict_tk_var['WC'].get())
             time.sleep(2)
@@ -689,7 +728,7 @@ class ApplianceDeviceControl:
         t02.start()
 
     def on_inc03(self, state):
-        while self.dict_btn['DUSCHE']['state'] == state == 'ON':
+        while self.dict_btn['DUSCHE']['state'] == state == 'active':
             self.dict_tk_var['DUSCHE'].set(self.dict_tk_var['DUSCHE'].get() + 1)
             print('DUSCHE', ":  values - - > ", self.dict_tk_var['DUSCHE'].get())
             time.sleep(2)
@@ -703,7 +742,7 @@ class ApplianceDeviceControl:
         t03.start()
 
     def on_inc04(self, state):
-        while self.dict_btn['WZ + K']['state'] == state == 'ON':
+        while self.dict_btn['WZ + K']['state'] == state == 'active':
             self.dict_tk_var['WZ + K'].set(self.dict_tk_var['WZ + K'].get() + 1)
             print('WZ + K', ":  values - - > ", self.dict_tk_var['WZ + K'].get())
             time.sleep(2)
@@ -717,7 +756,7 @@ class ApplianceDeviceControl:
         t04.start()
 
     def on_inc05(self, state):
-        while self.dict_btn['WZ + K + KP4']['state'] == state == 'ON':
+        while self.dict_btn['WZ + K + KP4']['state'] == state == 'active':
             self.dict_tk_var['WZ + K + KP4'].set(self.dict_tk_var['WZ + K + KP4'].get() + 1)
             print('WZ + K + KP4', ":  values - - > ", self.dict_tk_var['WZ + K + KP4'].get())
             time.sleep(2)
@@ -731,7 +770,7 @@ class ApplianceDeviceControl:
         t05.start()
 
     def on_inc06(self, state):
-        while self.dict_btn['WZ + K + WM4']['state'] == state == 'ON':
+        while self.dict_btn['WZ + K + WM4']['state'] == state == 'active':
             self.dict_tk_var['WZ + K + WM4'].set(self.dict_tk_var['WZ + K + WM4'].get() + 1)
             print('WZ + K + WM4', ":  values - - > ", self.dict_tk_var['WZ + K + WM4'].get())
             time.sleep(2)
@@ -745,7 +784,7 @@ class ApplianceDeviceControl:
         t06.start()
 
     def on_inc07(self, state):
-        while self.dict_btn['WZ + K + KP4 + WM4']['state'] == state == 'ON':
+        while self.dict_btn['WZ + K + KP4 + WM4']['state'] == state == 'active':
             self.dict_tk_var['WZ + K + KP4 + WM4'].set(self.dict_tk_var['WZ + K + KP4 + WM4'].get() + 1)
             print('WZ + K + KP4 + WM4', ":  values - - > ", self.dict_tk_var['WZ + K + KP4 + WM4'].get())
             time.sleep(2)
@@ -759,7 +798,7 @@ class ApplianceDeviceControl:
         t07.start()
 
     def on_inc08(self, state):
-        while self.dict_btn['ALLE LICHTER EIN']['state'] == state == 'ON':
+        while self.dict_btn['ALLE LICHTER EIN']['state'] == state == 'active':
             self.dict_tk_var['ALLE LICHTER EIN'].set(self.dict_tk_var['ALLE LICHTER EIN'].get() + 1)
             print('ALLE LICHTER EIN', ":  values - - > ", self.dict_tk_var['ALLE LICHTER EIN'].get())
             time.sleep(2)
@@ -773,7 +812,7 @@ class ApplianceDeviceControl:
         t08.start()
 
     def on_inc09(self, state):
-        while self.dict_btn['ALLE LICHTER AUS']['state'] == state == 'ON':
+        while self.dict_btn['ALLE LICHTER AUS']['state'] == state == 'active':
             self.dict_tk_var['ALLE LICHTER AUS'].set(self.dict_tk_var['ALLE LICHTER AUS'].get() + 1)
             print('ALLE LICHTER AUS', ":  values - - > ", self.dict_tk_var['ALLE LICHTER AUS'].get())
             time.sleep(2)
@@ -787,7 +826,7 @@ class ApplianceDeviceControl:
         t09.start()
 
     def on_inc10(self, state):
-        while self.dict_btn['NICHST']['state'] == state == 'ON':
+        while self.dict_btn['NICHST']['state'] == state == 'active':
             self.dict_tk_var['NICHST'].set(self.dict_tk_var['NICHST'].get() + 1)
             print('NICHST', ":  values - - > ", self.dict_tk_var['NICHST'].get())
             time.sleep(2)

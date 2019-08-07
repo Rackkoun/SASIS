@@ -24,7 +24,7 @@ from model.managedata.testdata import TestDataGenerator
 from model.managedata.ingeneering import DataProcessing
 
 from protocol.mqtt import SASISWarmingMQTT as sasisMsg
-
+from model.objects.message_box import MessageTip
 
 class MonitorringControl:
     """
@@ -108,8 +108,9 @@ class MonitorringControl:
     def add_btn(self, col, row, colpad, rowpad):
         self.graph_btn = sbutton(root=self.lf).get_btn()
         self.graph_btn.configure(text='Actualized')
-        self.graph_btn.configure(state='READY')
+        self.graph_btn.configure(state='normal')
         self.graph_btn.configure(command= self.on_actualized_graph_up)
+        MessageTip(gui=self.graph_btn, msg='Click the button again to actualize all graph above')
         self.graph_btn.grid(column=col, row=row, padx=rowpad, pady=colpad, sticky='NEWS')
 
     def on_add_graph_up(self, grp_style, col, row, px, py):
@@ -430,9 +431,9 @@ class MonitorringControl:
 
     def on_actualized_graph_up(self):
         print("Start STATE: ", self.graph_btn['state'])
-        if self.graph_btn['state'] == 'READY':
+        if self.graph_btn['state'] == 'normal':
             self.graph_btn.configure(text='Actualizing...')
-            self.graph_btn.configure(state='RUNNING')
+            self.graph_btn.configure(state='active')
 
             connection = self.server.in_connecting(self.config_file)
             df = self.server.read_db_content(connection)
@@ -486,7 +487,7 @@ class MonitorringControl:
                     print(style, " Graph actualized")
 
             time.sleep(1.8)
-            self.graph_btn.configure(state='READY')
+            self.graph_btn.configure(state='normal')
             print("BTN STATE: ", self.graph_btn['state'])
             self.graph_btn.configure(text='Actualized')
             print("BTN TEXT: ", self.graph_btn['text'])
