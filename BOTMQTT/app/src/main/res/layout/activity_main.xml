@@ -10,7 +10,7 @@
         android:id="@+id/date_lbl_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Datum: "
+        android:text="@string/datum"
         android:textStyle="bold"
         android:textSize="48px"
 
@@ -26,7 +26,7 @@
         android:id="@+id/date_val_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Datum val"
+        android:hint="@string/datum_val"
         android:textStyle="bold"
         android:textSize="48px"
 
@@ -42,7 +42,7 @@
         android:id="@+id/hour_lbl_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Uhrzeit: "
+        android:text="@string/uhrzeit"
         android:textStyle="bold"
         android:textSize="48px"
 
@@ -58,7 +58,7 @@
         android:id="@+id/hour_val_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Hour val"
+        android:hint="@string/hour_val"
         android:textStyle="bold"
         android:textSize="48px"
 
@@ -74,7 +74,7 @@
         android:id="@+id/consumption_lbl_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Verbrauch: "
+        android:text="@string/verbrauch"
         android:textStyle="bold"
         android:textSize="48px"
 
@@ -102,17 +102,6 @@
         app:layout_constraintTop_toBottomOf="@id/hour_lbl_id"
         app:layout_constraintLeft_toRightOf="@id/consumption_lbl_id"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/diag_id"
-        android:layout_marginTop="30dp"
-        android:layout_marginLeft="15dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:background="@color/colorPrimary"
-        android:textColor="#FFFFFF"
-        android:text="publish"
-        android:onClick="publishIntoStrom"/>
 
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/diag_id"
