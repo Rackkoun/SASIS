@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">BOT-MQTT</string>
+    <string name="datum">Datum:</string>
+    <string name="datum_val">Datum val</string>
+    <string name="uhrzeit">Uhrzeit:</string>
+    <string name="hour_val">Hour val</string>
+    <string name="verbrauch">Verbrauch:</string>
 </resources>
