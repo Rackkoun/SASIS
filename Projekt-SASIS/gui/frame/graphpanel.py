@@ -4,6 +4,7 @@ Created on 23.07.2019 at 18:10
 
 """
 import time
+from threading import Thread
 from tkinter import IntVar
 from tkinter.ttk import Frame, LabelFrame
 from gui.button.sradiobutton import SASISRadioButton as rsButton
@@ -44,6 +45,7 @@ class MonitorringControl:
         self.tmp = None
         self.tk_var = IntVar()           # Var für Radio-ButtonAuswahl
         self.graph_btn = None
+        self.thread = None
         self.config_file = './res/config/dbconfig.ini'
         self.graph_algo_dict = {}        # speiche Graphen für trainierten Daten
         self.graph_norm_dict = {}        # speiche Graphen für nicht trainierten Daten
@@ -108,7 +110,7 @@ class MonitorringControl:
     def add_btn(self, col, row, colpad, rowpad):
         self.graph_btn = sbutton(root=self.lf).get_btn()
         self.graph_btn.configure(text='Actualized')
-        self.graph_btn.configure(state='normal')
+        #self.graph_btn.configure(state='normal')
         self.graph_btn.configure(command= self.on_actualized_graph_up)
         MessageTip(gui=self.graph_btn, msg='Click the button again to actualize all graph above')
         self.graph_btn.grid(column=col, row=row, padx=rowpad, pady=colpad, sticky='NEWS')
@@ -430,10 +432,10 @@ class MonitorringControl:
                 print(" Wird ingnoriert...")
 
     def on_actualized_graph_up(self):
-        print("Start STATE: ", self.graph_btn['state'])
-        if self.graph_btn['state'] == 'normal':
-            self.graph_btn.configure(text='Actualizing...')
-            self.graph_btn.configure(state='active')
+        print("Start TEXT: ", self.graph_btn['text'])
+        if self.graph_btn['text'] == 'Actualized':
+            self.graph_btn.configure(text='Refreshing...')
+            self.graph_btn.configure(bg='#ffa500')
 
             connection = self.server.in_connecting(self.config_file)
             df = self.server.read_db_content(connection)
@@ -486,8 +488,31 @@ class MonitorringControl:
                     self.graph_norm_dict[str(style)].put_graph_on_canvas(fig=fig)
                     print(style, " Graph actualized")
 
-            time.sleep(1.8)
-            self.graph_btn.configure(state='normal')
-            print("BTN STATE: ", self.graph_btn['state'])
+            #self.graph_btn.configure(text='Actualized')
+            print("BTN STATE: ", self.graph_btn['text'])
+            #self.graph_btn.configure(bg='#00ee00')
+            time.sleep(1.)
+            #self.graph_btn.configure(state='normal')
+
+            self.graph_btn.bind('<Button-1>', self.thred_text(self.graph_btn['text']))
+            #time.sleep(2.1)
             self.graph_btn.configure(text='Actualized')
+            self.graph_btn.configure(bg='#00bfff')
             print("BTN TEXT: ", self.graph_btn['text'])
+
+            if self.thread.is_alive():
+                self.thread.join(.25)
+
+    def state_text(self, text):
+        if self.graph_btn['text'] == text == 'Refreshing...':
+            #self.graph_btn.configure(bg='#ffa500')
+            time.sleep(.1)
+        else:
+            self.graph_btn.configure(text='Actualized')
+            #self.graph_btn.configure(bg='#00bfff')
+            time.sleep(.1)
+
+    def thred_text(self, text):
+        t = Thread(target=self.state_text, args=(text,))
+        self.thread = t
+        self.thread.start()

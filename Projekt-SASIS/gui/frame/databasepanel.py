@@ -4,7 +4,7 @@ Created on 07.08.2019 at 00:07
 """
 
 import time
-from tkinter import INSERT, WORD, END, Button
+from tkinter import INSERT, WORD, END
 from tkinter.scrolledtext import ScrolledText as scrollT
 from tkinter.ttk import Frame, LabelFrame, Label
 from gui.button.sbutton import SASISActionButton as sbutton
@@ -19,6 +19,8 @@ class DatabaseContent:
         self.master = Frame(master=root)
         self.labelframe = None
         self.btn = None
+
+        self.thread = None
 
         self.db_max = None
         self.db_min = None
@@ -39,11 +41,9 @@ class DatabaseContent:
 
     def add_btn(self, col, row, colpad, rowpad):
         self.btn = sbutton(root=self.labelframe).get_btn()
-        self.btn.configure(text='LOAD')
-        self.btn.configure(state='normal')
+        self.btn.configure(text='Load Content')
         self.btn.configure(command=self.on_writing_in_the_field)
         MessageTip(gui=self.btn, msg='Click here to pull the db')
-        #tip.show()
         self.btn.grid(column=col, row=row, padx=rowpad, pady=colpad, sticky='W')
 
     def on_create_label(self, label_name, col, row, colpad, rowpad, pos):
@@ -55,24 +55,18 @@ class DatabaseContent:
         self.text_field.grid(column=col, row=row, padx=px, pady=py, columnspan=cspan)
 
     def on_writing_in_the_field(self):
-        if self.btn['state'] == 'normal':
-            self.btn['text'] = 'LOADING...'
-            self.btn['state'] = 'active'
+        if self.btn['text'] == 'Load Content':
+            self.btn.configure(text='Loading...')
+            self.btn.configure(bg='#ffa500')
+
             print(self.btn['text'], self.btn['state'])
 
             self.write_all()
+            #self.btn.bind('<Button-1>', self.thred_text(self.btn['text']))
+        time.sleep(.5)
 
-            self.btn.bind('<Button-1>', self.on_refresh(self.btn['state']))
-
-    def on_refresh(self, state):
-        if self.btn['state'] == state == 'normal':
-            self.btn['text'] = 'LOADING...'
-            self.btn['state'] = 'active'
-            print(self.btn['state'])
-        else:
-            self.btn['text'] = 'ACTUALIZED'
-            self.btn['state'] = 'normal'
-            print(self.btn['state'])
+        self.btn.configure(text='Load Content')
+        self.btn.configure(bg='#00bfff')
 
     def format_date(self, d):
         return d.strftime('%Y %b %d')
@@ -97,7 +91,7 @@ class DatabaseContent:
             self.text_field.insert(INSERT, '   ' + str(i) + '\t\t' + str(s) + "\t    " + str(
                 self.format_date(d)) + '\n')
             print(i, "\t", s, "\t", d)
-        time.sleep(2)
+        time.sleep(.2)
 
     def print_db_stats(self, df):
         new_df = self.data_ing.on_getting_data_from_server(df)
@@ -125,3 +119,19 @@ class DatabaseContent:
 
         self.db_current = Label(master=self.labelframe, text=text3)
         self.db_current.grid(column=3, row=2, padx=8, pady=8, sticky='N', columnspan=3)
+    #
+    # def thred_text(self, text, btn):
+    #
+    #     def on_refresh(event):
+    #         if btn['text'] == event == 'Loading...':
+    #             btn.configure(bg='#ffa500')
+    #             time.sleep(.1)
+    #             print(btn['text'])
+    #         else:
+    #             btn.configure(text='Load Content')
+    #             btn.configure(bg='#00bfff')
+    #             time.sleep(.1)
+    #             print(btn['text'])
+    #     t = Thread(target=on_refresh, args=(text, ))
+    #     self.thread = t
+    #     self.thread.start()
