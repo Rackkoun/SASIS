@@ -17,7 +17,10 @@ import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -55,10 +58,13 @@ public class MainActivity extends AppCompatActivity {
     private TextView msg_tv;
     private TextView date_tv;
     private TextView hour_tv;
-    private LineChart graph;
 
+    private LineChart graph;
     private EditText tmp_tv;
-    List<Entry> entries = new ArrayList<Entry>();
+    private List<Entry> entries = new ArrayList<Entry>();
+    private LineDataSet dataSet;
+    private ArrayList<ILineDataSet> iLineDataSets;
+    private LineData lineData;
 
     @SuppressLint("SimpleDateFormat")
     private SimpleDateFormat sdf = new SimpleDateFormat("dd MMM YYYY");
@@ -157,7 +163,16 @@ public class MainActivity extends AppCompatActivity {
         database = helper.getWritableDatabase();
         Log.d(TAG, "Views are initialized");
 
+        onSettingGraph(graph);
         entries.add(new Entry(0.0f, 0.0f)); // add values to an  entry
+        entries.add(new Entry(4.0f, 9.0f));
+        dataSet = new LineDataSet(entries, "Stromverbauch");
+
+        iLineDataSets = new ArrayList<>();
+        iLineDataSets.add(dataSet);
+        lineData = new LineData(iLineDataSets);
+
+        graph.setData(lineData);
     }
 
     private void onCreateAndroidClientMQTT(){
@@ -232,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "id: " + w.get_id() + "  Value: " + w.getValue() + " Date: " + w.getDate() + "  Time: " + w.getTime());
         }
 
-        graph.
+
     }
     private String convertIncomingTime(long itime){
         int hour = (int) ((itime / 1000) / 3600);
@@ -254,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
         chart.setDragEnabled(true);
         chart.setScaleEnabled(true);
         chart.setDrawGridBackground(false);
-        chart.setHighlightPerDragEnabled(true);
+        /*chart.setHighlightPerDragEnabled(true);
 
         // get the legend (only possible after setting data)
         Legend legend = chart.getLegend();
@@ -269,15 +284,15 @@ public class MainActivity extends AppCompatActivity {
         xAxis.setDrawGridLines(true);
         xAxis.setTextColor(Color.rgb(255, 192, 56));
         xAxis.setCenterAxisLabels(true);
-        xAxis.setGranularity(1f); // one hour
-        xAxis.setValueFormatter(new IAxisValueFormatter() {
+        xAxis.setGranularity(1f); */// one hour
+        /*xAxis.setValueFormatter(new IAxisValueFormatter() {
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
                 return sdf.format(new Date((long) value));
             }
         });
-
-        YAxis leftAxis = chart.getAxisLeft();
+*/
+        /*YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
         //leftAxis.setTypeface(mTfLight);
         leftAxis.setTextColor(ColorTemplate.getHoloBlue());
@@ -289,6 +304,8 @@ public class MainActivity extends AppCompatActivity {
         leftAxis.setTextColor(Color.rgb(255, 192, 56));
 
         YAxis rightAxis = chart.getAxisRight();
-        rightAxis.setEnabled(false);
+        rightAxis.setEnabled(false);*/
     }
+
+    //private void setDataSet()
 }
