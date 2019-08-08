@@ -6,6 +6,7 @@
     sources: datetime: https://stackoverflow.com/questions/415511/how-to-get-the-current-time-in-python
              append df: https://www.geeksforgeeks.org/python-pandas-dataframe-append/
              https://stackoverflow.com/questions/46343773/add-to-a-dataframe-as-i-go-with-datetime-index
+             index selection: https://stackoverflow.com/questions/25029822/get-date-of-last-record-in-date-indexed-pandas-dataframe
 """
 import datetime as dt
 import pandas as pd
@@ -49,10 +50,41 @@ class DataProcessing:
         return out
 
     def select_current_value(self, df):
+        """"""
         print("Before, len: ", len(df))
-        current = df[df.index.date == dt.date.today()]
-        print("After, len: ", len(current))
-        return current
+        global current_df
+        current_df = None
+        if len(df) == 1:
+            return df
+        if len(df) > 1: # es gibt Einträge
+            today_df = df[df.index.date == dt.date.today()]
+            if len(today_df) == 0: # aber nicht für heute
+                last_idx = len(df.index) - 1 # dann nach dem letzten suchen
+                last_col = df.loc[str(df.index[last_idx])] # und den Inhalt speichern
+
+                if len(df.columns) == 2:
+                    reconverted_idx2 = pd.to_datetime(df.index[last_idx].strftime('%Y-%m-%d'))
+                    df2 = pd.DataFrame(columns=['strom', 'datum'], index=[reconverted_idx2])
+                    df2['strom'] = last_col['strom']
+                    df2['datum'] = reconverted_idx2
+                    current_df = df2
+                    print("DF2\n", current_df)
+                if len(df.columns) > 2:
+                    reconverted_idx3 = pd.to_datetime(df.index[last_idx].strftime('%Y-%m-%d'))
+                    df3 = pd.DataFrame(columns=['strom', 'tag', 'monat', 'monat', 'wochentag'], index=[reconverted_idx3])
+                    df3['strom'] = last_col['strom']
+                    df3['tag'] = df3.index.day
+                    df3['monat'] = df3.index.month
+                    df3['jahr'] = df3.index.year
+                    df3['wochentag'] = df3.index.weekday_name
+                    current_df = df3
+                    print("DF3\n: ", current_df)
+            if len(today_df) == 1: # wenn Einträge für heute vorhanden sind
+                current = df[df.index.date == dt.date.today()] # dann abgeben
+                print("After, len: ", len(current))
+                current_df = current
+                print("CURRENT:\n", current_df)
+        return current_df
 
 #
 # if __name__=='__main__':

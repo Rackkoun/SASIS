@@ -168,17 +168,17 @@ class ApplianceDeviceControl:
     def on_updated_00(self):
         if self.dict_btn['WZ']['text'] == 'OFF':  # prüfen den aktuellen Text im Button
             self.dict_btn['WZ']['text'] = 'ON'  # dann ändere ihn mit dem hier
-            self.dict_btn['WZ'].configure(state='active')  # dasselbe auch für den Button-Zustand
+            #self.dict_btn['WZ'].configure(state='active')  # dasselbe auch für den Button-Zustand
             self.dict_btn['WZ'].configure(bg='#ff1a1a')
-            print(self.dict_btn['WZ']['state'])
+            print(self.dict_btn['WZ']['text'])
             self.on_updated_action('WZ')  # rufe die Methode für dementsprechenden Raumname auf
 
             # und setze eine Verbindung zwischen dem Button und der Methode auf, welche in einem Thread läuft
-            self.dict_btn['WZ'].bind('<Button-1>', self.on_thread_00(self.dict_btn['WZ']['state']))
+            self.dict_btn['WZ'].bind('<Button-1>', self.on_thread_00(self.dict_btn['WZ']['text']))
 
         else:
             self.dict_btn['WZ']['text'] = 'OFF'  # sonst setze den Text
-            self.dict_btn['WZ']['state'] = 'normal'  # und Button-Zustand in dem vorherigen Zustand zurück
+            #self.dict_btn['WZ']['state'] = 'normal'  # und Button-Zustand in dem vorherigen Zustand zurück
             self.dict_btn['WZ'].configure(bg='#00bfff')
             print("Last values of Va-00 = ", self.dict_tk_var['WZ'].get())  # prüfe der gepeicherte Wert in der TK-Var
 
@@ -190,7 +190,7 @@ class ApplianceDeviceControl:
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
                 self.house_lbl.grid(column=0, row=0, padx=8, pady=5)
                 self.house_lbl = img_lbl
-                print('Reset to: ', 'NICHST', ' STATUS: ', self.dict_btn['WZ']['state'])
+                print('Reset to: ', 'NICHST', ' STATUS: ', self.dict_btn['WZ']['text'])
             except IOError as ierror:
                 print('Fehler beim Laden des Bildes: -->', ierror)
             except KeyError as kerror:
@@ -220,15 +220,15 @@ class ApplianceDeviceControl:
     def on_updated_01(self):
         if self.dict_btn['SZ']['text'] == 'OFF':
             self.dict_btn['SZ']['text'] = 'ON'
-            self.dict_btn['SZ'].configure(state='active')
+            #self.dict_btn['SZ'].configure(state='active')
             self.dict_btn['SZ'].configure(bg='#ff1a1a')
 
-            print(self.dict_btn['SZ']['state'])
+            print(self.dict_btn['SZ']['text'])
             self.on_updated_action('SZ')
-            self.dict_btn['SZ'].bind('<Button-1>', self.on_thread_01(self.dict_btn['SZ']['state']))
+            self.dict_btn['SZ'].bind('<Button-1>', self.on_thread_01(self.dict_btn['SZ']['text']))
         else:
             self.dict_btn['SZ']['text'] = 'OFF'
-            self.dict_btn['SZ']['state'] = 'normal'
+            #self.dict_btn['SZ']['state'] = 'normal'
             self.dict_btn['SZ'].configure(bg='#00bfff')
             print("Last values of Va-01 = ", self.dict_tk_var['SZ'].get())
 
@@ -240,7 +240,7 @@ class ApplianceDeviceControl:
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
                 self.house_lbl.grid(column=0, row=0, padx=8, pady=5)
                 self.house_lbl = img_lbl
-                print('Reset to: ', 'NICHST', ' STATUS: ', self.dict_btn['SZ']['state'])
+                print('Reset to: ', 'NICHST', ' STATUS: ', self.dict_btn['SZ']['text'])
             except IOError as ierror:
                 print('Fehler beim Laden des Bildes: -->', ierror)
             except KeyError as kerror:
@@ -268,15 +268,15 @@ class ApplianceDeviceControl:
     def on_updated_02(self):
         if self.dict_btn['WC']['text'] == 'OFF':
             self.dict_btn['WC']['text'] = 'ON'
-            self.dict_btn['WC'].configure(state='active')
+            #self.dict_btn['WC'].configure(state='active')
             self.dict_btn['WC'].configure(bg='#ff1a1a')
 
-            print(self.dict_btn['WC']['state'])
+            print(self.dict_btn['WC']['text'])
             self.on_updated_action('WC')
-            self.dict_btn['WC'].bind('<Button-1>', self.on_thread_02(self.dict_btn['WC']['state']))
+            self.dict_btn['WC'].bind('<Button-1>', self.on_thread_02(self.dict_btn['WC']['text']))
         else:
             self.dict_btn['WC']['text'] = 'OFF'
-            self.dict_btn['WC']['state'] = 'normal'
+            #self.dict_btn['WC']['state'] = 'normal'
             self.dict_btn['WC'].configure(bg='#00bfff')
             print("Last values of Va-02 = ", self.dict_tk_var['WC'].get())
             try:
@@ -316,15 +316,15 @@ class ApplianceDeviceControl:
     def on_updated_03(self):
         if self.dict_btn['DUSCHE']['text'] == 'OFF':
             self.dict_btn['DUSCHE']['text'] = 'ON'
-            self.dict_btn['DUSCHE'].configure(state='active')
+            #self.dict_btn['DUSCHE'].configure(state='active')
             self.dict_btn['DUSCHE'].configure(bg='#ff1a1a')
 
-            print(self.dict_btn['DUSCHE']['state'])
+            print(self.dict_btn['DUSCHE']['text'])
             self.on_updated_action('DUSCHE')
-            self.dict_btn['DUSCHE'].bind('<Button-1>', self.on_thread_03(self.dict_btn['DUSCHE']['state']))
+            self.dict_btn['DUSCHE'].bind('<Button-1>', self.on_thread_03(self.dict_btn['DUSCHE']['text']))
         else:
             self.dict_btn['DUSCHE']['text'] = 'OFF'
-            self.dict_btn['DUSCHE']['state'] = 'normal'
+            #self.dict_btn['DUSCHE']['state'] = 'normal'
             self.dict_btn['DUSCHE'].configure(bg='#00bfff')
             print("Last values of Va-03 = ", self.dict_tk_var['DUSCHE'].get())
             try:
@@ -336,7 +336,7 @@ class ApplianceDeviceControl:
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
                 self.house_lbl.grid(column=0, row=0, padx=8, pady=5)
                 self.house_lbl = img_lbl
-                print('Reset to: ', 'NICHST', ' STATUS: ', self.dict_btn['DUSCHE']['state'])
+                print('Reset to: ', 'NICHST', ' STATUS: ', self.dict_btn['DUSCHE']['text'])
             except IOError as ierror:
                 print('Fehler beim Laden des Bildes: -->', ierror)
             except KeyError as kerror:
@@ -364,15 +364,15 @@ class ApplianceDeviceControl:
     def on_updated_04(self):
         if self.dict_btn['WZ + K']['text'] == 'OFF':
             self.dict_btn['WZ + K']['text'] = 'ON'
-            self.dict_btn['WZ + K'].configure(state='active')
+            #self.dict_btn['WZ + K'].configure(state='active')
             self.dict_btn['WZ + K'].configure(bg='#ff1a1a')
 
             print(self.dict_btn['WZ + K']['state'])
             self.on_updated_action('WZ + K')
-            self.dict_btn['WZ + K'].bind('<Button-1>', self.on_thread_04(self.dict_btn['WZ + K']['state']))
+            self.dict_btn['WZ + K'].bind('<Button-1>', self.on_thread_04(self.dict_btn['WZ + K']['text']))
         else:
             self.dict_btn['WZ + K']['text'] = 'OFF'
-            self.dict_btn['WZ + K']['state'] = 'normal'
+            #self.dict_btn['WZ + K']['state'] = 'normal'
             self.dict_btn['WZ + K'].configure(bg='#00bfff')
 
             print("Last values of Va-04 = ", self.dict_tk_var['WZ + K'].get())
@@ -385,7 +385,7 @@ class ApplianceDeviceControl:
                 self.house_lbl = Label(self.house_plan_lf, image=img_lbl)
                 self.house_lbl.grid(column=0, row=0, padx=8, pady=5)
                 self.house_lbl = img_lbl
-                print('Reset to: ', 'NICHST', ' STATUS: ', self.dict_btn['WZ + K']['state'])
+                print('Reset to: ', 'NICHST', ' STATUS: ', self.dict_btn['WZ + K']['text'])
             except IOError as ierror:
                 print('Fehler beim Laden des Bildes: -->', ierror)
             except KeyError as kerror:
@@ -413,15 +413,15 @@ class ApplianceDeviceControl:
     def on_updated_05(self):
         if self.dict_btn['WZ + K + KP4']['text'] == 'OFF':
             self.dict_btn['WZ + K + KP4']['text'] = 'ON'
-            self.dict_btn['WZ + K + KP4'].configure(state='active')
+            #self.dict_btn['WZ + K + KP4'].configure(state='active')
             self.dict_btn['WZ + K + KP4'].configure(bg='#ff1a1a')
 
             print(self.dict_btn['WZ + K + KP4']['state'])
             self.on_updated_action('WZ + K + KP4')
-            self.dict_btn['WZ + K + KP4'].bind('<Button-1>', self.on_thread_05(self.dict_btn['WZ + K + KP4']['state']))
+            self.dict_btn['WZ + K + KP4'].bind('<Button-1>', self.on_thread_05(self.dict_btn['WZ + K + KP4']['text']))
         else:
             self.dict_btn['WZ + K + KP4']['text'] = 'OFF'
-            self.dict_btn['WZ + K + KP4']['state'] = 'normal'
+            #self.dict_btn['WZ + K + KP4']['state'] = 'normal'
             self.dict_btn['WZ + K + KP4'].configure(bg='#00bfff')
             print("Last values of Va-05 = ", self.dict_tk_var['WZ + K + KP4'].get())
             try:
@@ -461,15 +461,15 @@ class ApplianceDeviceControl:
     def on_updated_06(self):
         if self.dict_btn['WZ + K + WM4']['text'] == 'OFF':
             self.dict_btn['WZ + K + WM4']['text'] = 'ON'
-            self.dict_btn['WZ + K + WM4'].configure(state='active')
+            #self.dict_btn['WZ + K + WM4'].configure(state='active')
             self.dict_btn['WZ + K + WM4'].configure(bg='#ff1a1a')
 
-            print(self.dict_btn['WZ + K + WM4']['state'])
+            print(self.dict_btn['WZ + K + WM4']['text'])
             self.on_updated_action('WZ + K + WM4')
-            self.dict_btn['WZ + K + WM4'].bind('<Button-1>', self.on_thread_06(self.dict_btn['WZ + K + WM4']['state']))
+            self.dict_btn['WZ + K + WM4'].bind('<Button-1>', self.on_thread_06(self.dict_btn['WZ + K + WM4']['text']))
         else:
             self.dict_btn['WZ + K + WM4']['text'] = 'OFF'
-            self.dict_btn['WZ + K + WM4']['state'] = 'normal'
+            #self.dict_btn['WZ + K + WM4']['state'] = 'normal'
             self.dict_btn['WZ + K + WM4'].configure(bg='#00bfff')
 
             print("Last values of Va-06 = ", self.dict_tk_var['WZ + K + WM4'].get())
@@ -510,16 +510,16 @@ class ApplianceDeviceControl:
     def on_updated_07(self):
         if self.dict_btn['WZ + K + KP4 + WM4']['text'] == 'OFF':
             self.dict_btn['WZ + K + KP4 + WM4']['text'] = 'ON'
-            self.dict_btn['WZ + K + KP4 + WM4'].configure(state='active')
+            #self.dict_btn['WZ + K + KP4 + WM4'].configure(state='active')
             self.dict_btn['WZ + K + KP4 + WM4'].configure(bg='#ff1a1a')
 
-            print(self.dict_btn['WZ + K + KP4 + WM4']['state'])
+            print(self.dict_btn['WZ + K + KP4 + WM4']['text'])
             self.on_updated_action('WZ + K + KP4 + WM4')
             self.dict_btn['WZ + K + KP4 + WM4'].bind('<Button-1>',
-                                                     self.on_thread_07(self.dict_btn['WZ + K + KP4 + WM4']['state']))
+                                                     self.on_thread_07(self.dict_btn['WZ + K + KP4 + WM4']['text']))
         else:
             self.dict_btn['WZ + K + KP4 + WM4']['text'] = 'OFF'
-            self.dict_btn['WZ + K + KP4 + WM4']['state'] = 'normal'
+            #self.dict_btn['WZ + K + KP4 + WM4']['state'] = 'normal'
             self.dict_btn['WZ + K + KP4 + WM4'].configure(bg='#00bfff')
 
             print("Last values of Va-07 = ", self.dict_tk_var['WZ + K + KP4 + WM4'].get())
@@ -560,16 +560,16 @@ class ApplianceDeviceControl:
     def on_updated_08(self):
         if self.dict_btn['ALLE LICHTER EIN']['text'] == 'OFF':
             self.dict_btn['ALLE LICHTER EIN']['text'] = 'ON'
-            self.dict_btn['ALLE LICHTER EIN'].configure(state='active')
+            #self.dict_btn['ALLE LICHTER EIN'].configure(state='active')
             self.dict_btn['ALLE LICHTER EIN'].configure(bg='#ff1a1a')
 
-            print(self.dict_btn['ALLE LICHTER EIN']['state'])
+            print(self.dict_btn['ALLE LICHTER EIN']['text'])
             self.on_updated_action('ALLE LICHTER EIN')
             self.dict_btn['ALLE LICHTER EIN'].bind('<Button-1>',
-                                                   self.on_thread_08(self.dict_btn['ALLE LICHTER EIN']['state']))
+                                                   self.on_thread_08(self.dict_btn['ALLE LICHTER EIN']['text']))
         else:
             self.dict_btn['ALLE LICHTER EIN']['text'] = 'OFF'
-            self.dict_btn['ALLE LICHTER EIN']['state'] = 'normal'
+            #self.dict_btn['ALLE LICHTER EIN']['state'] = 'normal'
             self.dict_btn['ALLE LICHTER EIN'].configure(bg='#00bfff')
 
             print("Last values of Va-08 = ", self.dict_tk_var['ALLE LICHTER EIN'].get())
@@ -610,16 +610,16 @@ class ApplianceDeviceControl:
     def on_updated_09(self):
         if self.dict_btn['ALLE LICHTER AUS']['text'] == 'OFF':
             self.dict_btn['ALLE LICHTER AUS']['text'] = 'ON'
-            self.dict_btn['ALLE LICHTER AUS'].configure(state='active')
+            #self.dict_btn['ALLE LICHTER AUS'].configure(state='active')
             self.dict_btn['ALLE LICHTER AUS'].configure(bg='#ff1a1a')
 
-            print(self.dict_btn['ALLE LICHTER AUS']['state'])
+            print(self.dict_btn['ALLE LICHTER AUS']['text'])
             self.on_updated_action('ALLE LICHTER AUS')
             self.dict_btn['ALLE LICHTER AUS'].bind('<Button-1>',
-                                                   self.on_thread_09(self.dict_btn['ALLE LICHTER AUS']['state']))
+                                                   self.on_thread_09(self.dict_btn['ALLE LICHTER AUS']['text']))
         else:
             self.dict_btn['ALLE LICHTER AUS']['text'] = 'OFF'
-            self.dict_btn['ALLE LICHTER AUS']['state'] = 'normal'
+            #self.dict_btn['ALLE LICHTER AUS']['state'] = 'normal'
             self.dict_btn['ALLE LICHTER AUS'].configure(bg='#00bfff')
             print("Last values of Va-09 = ", self.dict_tk_var['ALLE LICHTER AUS'].get())
             try:
@@ -651,15 +651,15 @@ class ApplianceDeviceControl:
     def on_updated_10(self):
         if self.dict_btn['NICHST']['text'] == 'OFF':
             self.dict_btn['NICHST']['text'] = 'ON'
-            self.dict_btn['NICHST'].configure(state='active')
+            #self.dict_btn['NICHST'].configure(state='active')
             self.dict_btn['NICHST'].configure(bg='#00bfff')
 
-            print(self.dict_btn['NICHST']['state'])
+            print(self.dict_btn['NICHST']['text'])
             self.on_updated_action('NICHST')
-            self.dict_btn['NICHST'].bind('<Button-1>', self.on_thread_10(self.dict_btn['NICHST']['state']))
+            self.dict_btn['NICHST'].bind('<Button-1>', self.on_thread_10(self.dict_btn['NICHST']['text']))
         else:
             self.dict_btn['NICHST']['text'] = 'OFF'
-            self.dict_btn['NICHST']['state'] = 'normal'
+            #self.dict_btn['NICHST']['state'] = 'normal'
             self.dict_btn['NICHST'].configure(bg='#00bfff')
             print("Last values of Va-10 = ", self.dict_tk_var['NICHST'].get())
             try:
@@ -681,152 +681,152 @@ class ApplianceDeviceControl:
     # https://stackoverflow.com/questions/41711357/python-how-to-multi-thread-a-function-that-returns-multiple-values
     # https://stackoverflow.com/questions/11986005/better-way-to-get-results-from-multiple-threads
     # Thread: https://nitratine.net/blog/post/python-threading-basics/
-    def on_inc00(self, state):
-        while self.dict_btn['WZ']['state'] == state == 'active':
+    def on_inc00(self, text):
+        while self.dict_btn['WZ']['text'] == text == 'ON':
             self.dict_tk_var['WZ'].set(self.dict_tk_var['WZ'].get() + 1)  # für die Inkrementierung
             self.queue.put(self.dict_tk_var['WZ'].get())  # Werte in der Warteschlage hinterlegen
             print('WZ', ":  values - - > ", self.dict_tk_var['WZ'].get())
             print("value in Q0: ", self.queue.get())  # für die IPC
             time.sleep(2)
 
-    def on_thread_00(self, state):
-        t00 = Thread(target=self.on_inc00, args=(state,))
+    def on_thread_00(self, text):
+        t00 = Thread(target=self.on_inc00, args=(text,))
         self.thread_dict['WZ'] = t00  # Thread in der Liste hinzufügen
-        print("Thread 00 (", t00.getName(), "): added in List- - -> State: ", t00.isAlive())
+        print("Thread 00 (", t00.getName(), "): added in List- - -> TEXT: ", t00.isAlive())
         print("Thread_dict 00 (", self.thread_dict['WZ'].getName(), "): added in List- - -> State: ",
               self.thread_dict['WZ'].isAlive())
         t00.start()
 
-    def on_inc01(self, state):
-        while self.dict_btn['SZ']['state'] == state == 'active':
+    def on_inc01(self, text):
+        while self.dict_btn['SZ']['text'] == text == 'ON':
             self.dict_tk_var['SZ'].set(self.dict_tk_var['SZ'].get() + 1)
             self.queue.put(self.dict_tk_var['SZ'].get())
             print('SZ', ":  values - - > ", self.dict_tk_var['SZ'].get())
             print("Value in Q1: ", self.queue.get())
             time.sleep(2)
 
-    def on_thread_01(self, state):
-        t01 = Thread(target=self.on_inc01, args=(state,))
+    def on_thread_01(self, text):
+        t01 = Thread(target=self.on_inc01, args=(text,))
         self.thread_dict['SZ'] = t01  # Thread in der Liste hinzufügen
         print("Thread 01 (", t01.getName(), "): added in List- - -> State: ", t01.isAlive())
         print("Thread_dict 01 (", self.thread_dict['SZ'].getName(), "): added in List- - -> State: ",
               self.thread_dict['SZ'].isAlive())
         t01.start()
 
-    def on_inc02(self, state):
-        while self.dict_btn['WC']['state'] == state == 'active':
+    def on_inc02(self, text):
+        while self.dict_btn['WC']['text'] == text == 'ON':
             self.dict_tk_var['WC'].set(self.dict_tk_var['WC'].get() + 1)
             print('WC', ":  values - - > ", self.dict_tk_var['WC'].get())
             time.sleep(2)
 
-    def on_thread_02(self, state):
-        t02 = Thread(target=self.on_inc02, args=(state,))
+    def on_thread_02(self, text):
+        t02 = Thread(target=self.on_inc02, args=(text,))
         self.thread_dict['WC'] = t02  # Thread in der Liste hinzufügen
         print("Thread 02 (", t02.getName(), "): added in List- - -> State: ", t02.isAlive())
         print("Thread_dict 02 (", self.thread_dict['WC'].getName(), "): added in List- - -> State: ",
               self.thread_dict['WC'].isAlive())
         t02.start()
 
-    def on_inc03(self, state):
-        while self.dict_btn['DUSCHE']['state'] == state == 'active':
+    def on_inc03(self, text):
+        while self.dict_btn['DUSCHE']['text'] == text == 'ON':
             self.dict_tk_var['DUSCHE'].set(self.dict_tk_var['DUSCHE'].get() + 1)
             print('DUSCHE', ":  values - - > ", self.dict_tk_var['DUSCHE'].get())
             time.sleep(2)
 
-    def on_thread_03(self, state):
-        t03 = Thread(target=self.on_inc03, args=(state,))
+    def on_thread_03(self, text):
+        t03 = Thread(target=self.on_inc03, args=(text,))
         self.thread_dict['DUSCHE'] = t03  # Thread in der Liste hinzufügen
         print("Thread 03 (", t03.getName(), "): added in List- - -> State: ", t03.isAlive())
         print("Thread_dict 03 (", self.thread_dict['DUSCHE'].getName(), "): added in List- - -> State: ",
               self.thread_dict['DUSCHE'].isAlive())
         t03.start()
 
-    def on_inc04(self, state):
-        while self.dict_btn['WZ + K']['state'] == state == 'active':
+    def on_inc04(self, text):
+        while self.dict_btn['WZ + K']['text'] == text == 'ON':
             self.dict_tk_var['WZ + K'].set(self.dict_tk_var['WZ + K'].get() + 1)
             print('WZ + K', ":  values - - > ", self.dict_tk_var['WZ + K'].get())
             time.sleep(2)
 
-    def on_thread_04(self, state):
-        t04 = Thread(target=self.on_inc04, args=(state,))
+    def on_thread_04(self, text):
+        t04 = Thread(target=self.on_inc04, args=(text,))
         self.thread_dict['WZ + K'] = t04  # Thread in der Liste hinzufügen
         print("Thread 04 (", t04.getName(), "): added in List- - -> State: ", t04.isAlive())
         print("Thread_dict 04 (", self.thread_dict['WZ + K'].getName(), "): added in List- - -> State: ",
               self.thread_dict['WZ + K'].isAlive())
         t04.start()
 
-    def on_inc05(self, state):
-        while self.dict_btn['WZ + K + KP4']['state'] == state == 'active':
+    def on_inc05(self, text):
+        while self.dict_btn['WZ + K + KP4']['text'] == text == 'ON':
             self.dict_tk_var['WZ + K + KP4'].set(self.dict_tk_var['WZ + K + KP4'].get() + 1)
             print('WZ + K + KP4', ":  values - - > ", self.dict_tk_var['WZ + K + KP4'].get())
             time.sleep(2)
 
-    def on_thread_05(self, state):
-        t05 = Thread(target=self.on_inc05, args=(state,))
+    def on_thread_05(self, text):
+        t05 = Thread(target=self.on_inc05, args=(text,))
         self.thread_dict['WZ + K + KP4'] = t05  # Thread in der Liste hinzufügen
         print("Thread 05 (", t05.getName(), "): added in List- - -> State: ", t05.isAlive())
         print("Thread_dict 05 (", self.thread_dict['WZ + K + KP4'].getName(), "): added in List- - -> State: ",
               self.thread_dict['WZ + K + KP4'].isAlive())
         t05.start()
 
-    def on_inc06(self, state):
-        while self.dict_btn['WZ + K + WM4']['state'] == state == 'active':
+    def on_inc06(self, text):
+        while self.dict_btn['WZ + K + WM4']['text'] == text == 'ON':
             self.dict_tk_var['WZ + K + WM4'].set(self.dict_tk_var['WZ + K + WM4'].get() + 1)
             print('WZ + K + WM4', ":  values - - > ", self.dict_tk_var['WZ + K + WM4'].get())
             time.sleep(2)
 
-    def on_thread_06(self, state):
-        t06 = Thread(target=self.on_inc06, args=(state,))
+    def on_thread_06(self, text):
+        t06 = Thread(target=self.on_inc06, args=(text,))
         self.thread_dict['WZ + K + WM4'] = t06  # Thread in der Liste hinzufügen
         print("Thread 06 (", t06.getName(), "): added in List- - -> State: ", t06.isAlive())
         print("Thread_dict 06 (", self.thread_dict['WZ + K + WM4'].getName(), "): added in List- - -> State: ",
               self.thread_dict['WZ + K + WM4'].isAlive())
         t06.start()
 
-    def on_inc07(self, state):
-        while self.dict_btn['WZ + K + KP4 + WM4']['state'] == state == 'active':
+    def on_inc07(self, text):
+        while self.dict_btn['WZ + K + KP4 + WM4']['text'] == text == 'ON':
             self.dict_tk_var['WZ + K + KP4 + WM4'].set(self.dict_tk_var['WZ + K + KP4 + WM4'].get() + 1)
             print('WZ + K + KP4 + WM4', ":  values - - > ", self.dict_tk_var['WZ + K + KP4 + WM4'].get())
             time.sleep(2)
 
-    def on_thread_07(self, state):
-        t07 = Thread(target=self.on_inc07, args=(state,))
+    def on_thread_07(self, text):
+        t07 = Thread(target=self.on_inc07, args=(text,))
         self.thread_dict['WZ + K + KP4 + WM4'] = t07  # Thread in der Liste hinzufügen
         print("Thread 07 (", t07.getName(), "): added in List- - -> State: ", t07.isAlive())
         print("Thread_dict 07 (", self.thread_dict['WZ + K + KP4 + WM4'].getName(), "): added in List- - -> State: ",
               self.thread_dict['WZ + K + KP4 + WM4'].isAlive())
         t07.start()
 
-    def on_inc08(self, state):
-        while self.dict_btn['ALLE LICHTER EIN']['state'] == state == 'active':
+    def on_inc08(self, text):
+        while self.dict_btn['ALLE LICHTER EIN']['text'] == text == 'ON':
             self.dict_tk_var['ALLE LICHTER EIN'].set(self.dict_tk_var['ALLE LICHTER EIN'].get() + 1)
             print('ALLE LICHTER EIN', ":  values - - > ", self.dict_tk_var['ALLE LICHTER EIN'].get())
             time.sleep(2)
 
-    def on_thread_08(self, state):
-        t08 = Thread(target=self.on_inc08, args=(state,))
+    def on_thread_08(self, text):
+        t08 = Thread(target=self.on_inc08, args=(text,))
         self.thread_dict['ALLE LICHTER EIN'] = t08  # Thread in der Liste hinzufügen
         print("Thread 08 (", t08.getName(), "): added in List- - -> State: ", t08.isAlive())
         print("Thread_dict 08 (", self.thread_dict['ALLE LICHTER EIN'].getName(), "): added in List- - -> State: ",
               self.thread_dict['ALLE LICHTER EIN'].isAlive())
         t08.start()
 
-    def on_inc09(self, state):
-        while self.dict_btn['ALLE LICHTER AUS']['state'] == state == 'active':
+    def on_inc09(self, text):
+        while self.dict_btn['ALLE LICHTER AUS']['text'] == text == 'ON':
             self.dict_tk_var['ALLE LICHTER AUS'].set(self.dict_tk_var['ALLE LICHTER AUS'].get() + 1)
             print('ALLE LICHTER AUS', ":  values - - > ", self.dict_tk_var['ALLE LICHTER AUS'].get())
             time.sleep(2)
 
-    def on_thread_09(self, state):
-        t09 = Thread(target=self.on_inc09, args=(state,))
+    def on_thread_09(self, text):
+        t09 = Thread(target=self.on_inc09, args=(text,))
         self.thread_dict['ALLE LICHTER AUS'] = t09  # Thread in der Liste hinzufügen
         print("Thread 09 (", t09.getName(), "): added in List- - -> State: ", t09.isAlive())
         print("Thread_dict 09 (", self.thread_dict['ALLE LICHTER AUS'].getName(), "): added in List- - -> State: ",
               self.thread_dict['ALLE LICHTER AUS'].isAlive())
         t09.start()
 
-    def on_inc10(self, state):
-        while self.dict_btn['NICHST']['state'] == state == 'active':
+    def on_inc10(self, text):
+        while self.dict_btn['NICHST']['text'] == text == 'ON':
             self.dict_tk_var['NICHST'].set(self.dict_tk_var['NICHST'].get() + 1)
             print('NICHST', ":  values - - > ", self.dict_tk_var['NICHST'].get())
             time.sleep(2)
