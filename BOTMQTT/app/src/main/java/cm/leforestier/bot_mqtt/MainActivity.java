@@ -3,6 +3,9 @@ package cm.leforestier.bot_mqtt;
 import android.annotation.SuppressLint;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,16 +15,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
+import com.github.mikephil.charting.utils.Utils;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -38,13 +39,20 @@ import warning_model.WarningManager;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
+/*
+* Modified 09.08.2019 at 14:17
+* @author: Ruphus
+* sources: MPAndroidChart Documentation: https://weeklycoding.com/mpandroidchart-documentation/
+*          https://stackoverflow.com/questions/42909979/mpandroidchart-how-can-i-best-set-the-x-axis-values-as-strings-dates
+*          Exemple 12 : https://www.programcreek.com/java-api-examples/?api=com.github.mikephil.charting.formatter.IAxisValueFormatter
+*          https://stackoverflow.com/questions/41818963/mpandroidchart-v3-x-x-upgraded-from-2-x-x-labels
+*          http://shaoniiuc.com/android/android-line-chart-example/
+*          https://github.com/PhilJay/MPAndroidChart/wiki/Modifying-the-Viewport
+* */
 public class MainActivity extends AppCompatActivity {
-// MPAndroidChart Documentation: https://weeklycoding.com/mpandroidchart-documentation/
-// Exemple 12 : https://www.programcreek.com/java-api-examples/?api=com.github.mikephil.charting.formatter.IAxisValueFormatter
+//
+//
     private final String TAG = MainActivity.class.getSimpleName();
 
     private String topicMsg = "strom/bot";
@@ -58,12 +66,13 @@ public class MainActivity extends AppCompatActivity {
     private TextView msg_tv;
     private TextView date_tv;
     private TextView hour_tv;
+    private EditText tmp_tv;
 
     private LineChart graph;
-    private EditText tmp_tv;
-    private List<Entry> entries = new ArrayList<Entry>();
-    private LineDataSet dataSet;
+    private List<Entry> entries;
+    private LineDataSet lineDataSet;
     private ArrayList<ILineDataSet> iLineDataSets;
+    private List<String> xaxis;
     private LineData lineData;
 
     @SuppressLint("SimpleDateFormat")
@@ -73,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     SQLiteDatabase database;
     WarningManager manager = new WarningManager();
 
+    int inc = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -131,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
         }catch (MqttException e){e.printStackTrace();}
 
     }
+
     public void publishIntoStrom(View view) {
         try {
             String msg = "Ohayo kosalimasu";
@@ -162,17 +173,7 @@ public class MainActivity extends AppCompatActivity {
         helper = new BOTMQTTDB(this);
         database = helper.getWritableDatabase();
         Log.d(TAG, "Views are initialized");
-
-        onSettingGraph(graph);
-        entries.add(new Entry(0.0f, 0.0f)); // add values to an  entry
-        entries.add(new Entry(4.0f, 9.0f));
-        dataSet = new LineDataSet(entries, "Stromverbauch");
-
-        iLineDataSets = new ArrayList<>();
-        iLineDataSets.add(dataSet);
-        lineData = new LineData(iLineDataSets);
-
-        graph.setData(lineData);
+        onCreateGraph();
     }
 
     private void onCreateAndroidClientMQTT(){
@@ -247,65 +248,137 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "id: " + w.get_id() + "  Value: " + w.getValue() + " Date: " + w.getDate() + "  Time: " + w.getTime());
         }
 
+        onDraw(warningList);
+    }
+
+    private void onDraw(List<Warning> warnings){
+        //reset();
+        entries.add(new Entry(0.0f, 0.0f)); // add values to an  entry
+        xaxis.add("0");
+        for(int i = 0; i < warnings.size(); i++){
+            entries.add(new Entry((float) (i+1), Double.valueOf(warnings.get(i).getValue()).floatValue()));
+            xaxis.add(warnings.get(i).getDate());
+        }
+        lineDataSet = new LineDataSet(entries, "Stromverbrauch");//add the entries with a legend
+        onConfigLineDataSet(lineDataSet);
+
+        iLineDataSets.add(lineDataSet);
+        lineData = new LineData(iLineDataSets);
+        graph.setData(lineData); // first set data
+
+        graph.setTouchEnabled(true);
+        graph.setPinchZoom(true);
+                                      // then modified viewport
+        graph.getXAxis().setPosition(XAxis.XAxisPosition.TOP);
+        graph.getAxisRight().setEnabled(false); // don't show right YAxix
+        graph.getXAxis().setDrawAxisLine(false);
+        graph.getXAxis().setDrawGridLines(false);
+        graph.getXAxis().setCenterAxisLabels(false);
+
+        graph.getXAxis().setTextColor(Color.BLACK);
+        graph.getXAxis().setTextSize(11f);
+        graph.setDrawBorders(false);
+
+        graph.getDescription().setText("Darstellung nicht erdentlicher Stromverbräuche");
+
+        setGraphViewPort();
+        graph.animateXY(1200, 2200);
+    }
+
+    private void reset(){
+        entries = null;
+        lineDataSet = null;
+        xaxis = null;
+        iLineDataSets = null;
+
+        entries = new ArrayList<>();
+        xaxis = new ArrayList<>();
+        iLineDataSets = new ArrayList<>();
 
     }
-    private String convertIncomingTime(long itime){
-        int hour = (int) ((itime / 1000) / 3600);
-        int minuts = (int) (((itime / 1000) / 60) % 60);
-        int seconds = (int) ((itime / 1000) % 60);
 
-        return hour + "h : "+minuts+ "m : "+seconds+"s";
+    private void onCreateGraph(){
+        reset();
+
+        List<Warning> warningList = manager.groupDaily(helper.getWarnings());
+        msg_tv.setText(String.valueOf(warningList.get(0).getValue()));
+        date_tv.setText(warningList.get(0).getDate());
+        hour_tv.setText(warningList.get(0).getTime());
+
+        Log.d(TAG, "LIST CONTENT: "+warningList);
+
+        for (Warning w: warningList) {
+            Log.d(TAG, "id: " + w.get_id() + "  Value: " + w.getValue() + " Date: " + w.getDate() + "  Time: " + w.getTime());
+        }
+
+        onDraw(warningList);
+
+        Log.d(TAG, "GraphData: " + graph.getData() + "  DatasetCount: "+ graph.getData().getDataSetCount() +
+                "   Number of ENTRY: " + graph.getData().getEntryCount());
+    }
+
+    private void onConfigLineDataSet(LineDataSet set){
+
+        set.setDrawIcons(false);
+        set.enableDashedLine(10f, 8f, 1f);
+        set.enableDashedHighlightLine(10f, 8f, 1f);
+        set.setColor(Color.DKGRAY);
+        set.setCircleColor(Color.DKGRAY);
+        set.setLineWidth(1f);
+        set.setCircleRadius(4f);
+        set.setValueTextSize(10f);
+        set.setDrawFilled(true);
+        set.setFormLineWidth(1f);
+        set.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 8f}, 1f));
+        set.setFormSize(10f);
+
+           if (Utils.getSDKInt() >= 21){
+            Drawable drawable = ContextCompat.getDrawable(this, R.drawable.graph_background);
+            lineDataSet.setFillDrawable(drawable);
+        }
+            else {
+            lineDataSet.setFillColor(Color.DKGRAY);
+        }
+    }
+
+    private void onUpdateGraph(){
+            inc = graph.getData().getEntryCount();
+        if(graph.getData() != null && graph.getData().getEntryCount() > 0){
+            Log.d(TAG, "Number of ENTRY: " + graph.getData().getEntryCount());
+            entries.add(new Entry((float) inc, (float) 147.45));
+            xaxis.add("2019-08-09");
+            lineDataSet.setValues(entries);
+            //graph.getXAxis().setValueFormatter(new IndexAxisValueFormatter(xaxis));
+
+            //graph.getXAxis().setAxisMaximum(xaxis.size());
+            setGraphViewPort();
+            graph.getData().notifyDataChanged();
+            graph.notifyDataSetChanged();
+
+            graph.animateY(1200);
+            //graph.animate();
+            graph.moveViewToX(4);
+
+
+        }
+        inc++;
     }
 
     public void onCOmmand(View view) {
-        double v = Double.parseDouble(tmp_tv.getText().toString());
-        onWriting(v);
-        onRead();
+        //double v = Double.parseDouble(tmp_tv.getText().toString());
+        //onWriting(v);
+        //onRead();
+        onUpdateGraph();
     }
 
-    private void onSettingGraph(LineChart chart){
+    private void setGraphViewPort(){
 
-        // enable scaling and dragging
-        chart.setDragEnabled(true);
-        chart.setScaleEnabled(true);
-        chart.setDrawGridBackground(false);
-        /*chart.setHighlightPerDragEnabled(true);
+        graph.getXAxis().setValueFormatter(new IndexAxisValueFormatter(xaxis));
 
-        // get the legend (only possible after setting data)
-        Legend legend = chart.getLegend();
-        legend.setEnabled(false);
+        graph.getXAxis().setGranularity(1f);
+        graph.getXAxis().setGranularityEnabled(true);
 
-        XAxis xAxis = chart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.TOP_INSIDE);
-        //xAxis.setTypeface(mTfLight);
-        xAxis.setTextSize(10f);
-        xAxis.setTextColor(Color.WHITE);
-        xAxis.setDrawAxisLine(false);
-        xAxis.setDrawGridLines(true);
-        xAxis.setTextColor(Color.rgb(255, 192, 56));
-        xAxis.setCenterAxisLabels(true);
-        xAxis.setGranularity(1f); */// one hour
-        /*xAxis.setValueFormatter(new IAxisValueFormatter() {
-            @Override
-            public String getFormattedValue(float value, AxisBase axis) {
-                return sdf.format(new Date((long) value));
-            }
-        });
-*/
-        /*YAxis leftAxis = chart.getAxisLeft();
-        leftAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
-        //leftAxis.setTypeface(mTfLight);
-        leftAxis.setTextColor(ColorTemplate.getHoloBlue());
-        leftAxis.setDrawGridLines(true);
-        leftAxis.setGranularityEnabled(true);
-        leftAxis.setAxisMinimum(0f);
-        leftAxis.setAxisMaximum(170f);
-        leftAxis.setYOffset(-9f);
-        leftAxis.setTextColor(Color.rgb(255, 192, 56));
-
-        YAxis rightAxis = chart.getAxisRight();
-        rightAxis.setEnabled(false);*/
+        graph.getXAxis().setAvoidFirstLastClipping(true); // to avoid that the last value always appear clipped
+        graph.setVisibleXRangeMaximum(2);
     }
-
-    //private void setDataSet()
 }
