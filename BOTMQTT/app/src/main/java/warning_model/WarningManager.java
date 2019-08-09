@@ -25,47 +25,29 @@ public class WarningManager {
     //get push up object grouped by days
     public List<Warning> groupDaily(List<Warning> warnings){
         final Comparator<Warning> warningComparator =
-                Comparator.comparingDouble(Warning::getValue); //get the push-up object that have the greatest value "max" (only one value per day)
+                Comparator.comparingDouble(Warning::getValue); //get the warning object that have the greatest value "max" (only one value per day)
 
-        for (Warning warning : warnings) {// for each push-up object, only the id, the max-value and the datetime as"long" are stored in the database
-            date.setTime(warning.getDatetime()); // after getting the data stored in the database as a list, the time and date of each object in that list will be formatted
-            warning.setDate(sdf_days.format(date));
-            warning.setTime(sdf_time.format(date));
+        if(warnings.size() > 0){
+            for (Warning warning : warnings) {// for each warning object, only the id, the max-value and the datetime as"long" are stored in the database
+                date.setTime(warning.getDatetime()); // after getting the data stored in the database as a list, the time and date of each object in that list will be formatted
+                warning.setDate(sdf_days.format(date));
+                warning.setTime(sdf_time.format(date));
+            }
+
+            List<Warning> newList = // The elements in the list are grouped (with the Java Stream API) to a new list
+                    warnings.stream()
+                            .collect(Collectors.groupingBy(Warning::getDate,
+                                    Collectors.maxBy(warningComparator)))
+                            .values().stream().map(Optional::get)
+                            .collect(Collectors.toList());
+
+            Log.d(getClass().getSimpleName(),"Size: "+ newList.size());
+            for (Warning p: newList) {
+                Log.d(getClass().getSimpleName(), "ID: " +p.get_id() +"   Value:" + p.getValue() + "Date: "+ p.getDate()+ "   Time: "+p.getTime()+"--> datetime: " + p.getDatetime());
+            }
+            return newList;
         }
-
-        List<Warning> newList = // The elements in the list are grouped (with the Java Stream API) to a new list
-                warnings.stream()
-                        .collect(Collectors.groupingBy(Warning::getDate,
-                                Collectors.maxBy(warningComparator)))
-                        .values().stream().map(Optional::get)
-                        .collect(Collectors.toList());
-
-        Log.d(getClass().getSimpleName(),"Size: "+ newList.size());
-        for (Warning p: newList) {
-            Log.d(getClass().getSimpleName(), "ID: " +p.get_id() +"   Value:" + p.getValue() + "Date: "+ p.getDate()+ "   Time: "+p.getTime()+"--> datetime: " + p.getDatetime());
-        }
-        return newList;
-    }
-
-    // the process is same as in the method "groupByMaxofDay"
-    public List<Warning> groupMonthly(List<Warning> warnings){
-        final Comparator<Warning> pushupComparator =
-                (p1, p2) -> Double.compare(p1.getValue(), p2.getValue());
-        for (Warning warning : warnings) {
-            warning.setDate(sdf_months.format(date));
-            warning.setTime(sdf_time.format(date));
-        }
-
-        List<Warning> newList = warnings.stream()
-                .collect(Collectors.groupingBy(Warning::getDate,
-                        Collectors.maxBy(pushupComparator)))
-                .values().stream().map(Optional::get)
-                .collect(Collectors.toList());
-
-        for (Warning p: newList) {
-            Log.d(getClass().getSimpleName(), "ID: " +p.get_id() +"   Value:" + p.getValue() + "Date: "+ p.getDate()+ "   Time: "+p.getTime()+"--> datetime: " + p.getDatetime());
-        }
-        return newList;
+        return null;
     }
 
     public List<Warning> reorderedDaily(List<Warning> list){
@@ -85,38 +67,23 @@ public class WarningManager {
         return l;
     }
 
-    public List<Warning> reorderedMonthly(List<Warning> list){
-        List<Warning> reorderedList  = groupMonthly(list);
-        final Comparator<Warning> datetimeComparator =
-                (p1, p2) -> Long.compare(p1.getDatetime(), p2.getDatetime());
-
-        Log.d(getClass().getSimpleName(),"size reordered List: " + reorderedList.size());
-        List<Warning> l = reorderedList.stream()
-                .sorted(datetimeComparator)
-                .collect(Collectors.toList());
-        for (Warning p: l){
-            Log.d(getClass().getSimpleName(),"ID : " +p.get_id() + "   Value: "+p.getValue()
-                    +"   Time: "+p.getTime()+"   Date: "+p.getDate()+"   Datetime: "+p.getDatetime());
-        }
-        return l;
-    }
-
-    // the best performance is displayed only when the stop-button is clicked.
-    // the method "getBestperformance" show the object with the greatest value on the screen
-    // http://www.techiedelight.com/find-maximum-minimum-custom-objects-java/
+    // get the object with the highest value
     public Warning getHighestUse( List<Warning> list){
-        Warning war = list
-                .stream()
-                .max(Comparator.comparing(Warning::getValue))
-                .get();
-        war.setTime(sdf_time.format(war.getDatetime()));
-        war.setDate(sdf_days.format(war.getDatetime()));
-        Log.d(getClass().getSimpleName(), "Highest use::\n" +
-                "ID: "+ war.get_id()+"\nValue: " + war.getValue()+
-                "\nDate: " + war.getDate()+
-                "\nTime: "+ war.getTime()+
-                "\nDatetime: "+war.getDatetime());
+        if (list.size() > 0){
+            Warning war = list
+                    .stream()
+                    .max(Comparator.comparing(Warning::getValue))
+                    .get();
+            war.setTime(sdf_time.format(war.getDatetime()));
+            war.setDate(sdf_days.format(war.getDatetime()));
+            Log.d(getClass().getSimpleName(), "Highest use::\n" +
+                    "ID: "+ war.get_id()+"\nValue: " + war.getValue()+
+                    "\nDate: " + war.getDate()+
+                    "\nTime: "+ war.getTime()+
+                    "\nDatetime: "+war.getDatetime());
 
-        return war;
+            return war;
+        }
+        return null;
     }
 }

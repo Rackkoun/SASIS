@@ -110,29 +110,12 @@ public class BOTMQTTDB extends SQLiteOpenHelper {
                 Warning warning = new Warning(value, datetime);
                 warning.set_id(id);
                 Log.d(getClass().getSimpleName(),
-                        "ID: "+warning.get_id() + "   Max: " + warning.getValue()+ "   Datetime: " + warning.getDatetime());
+                        "ID: "+warning.get_id() + "   Value: " + warning.getValue()+ "   Datetime: " + warning.getDatetime());
                 warnings.add(warning);
 
             }while (cursor.moveToNext());
         }
         cursor.close();
         return warnings;
-    }
-
-    // Delete Table in the Database
-    public void onDeleteWarnings() {
-        SQLiteDatabase db = getWritableDatabase();
-        db.beginTransaction();
-
-        try {
-            db.delete(WARNING_TABLE, null, null);
-            db.setTransactionSuccessful();
-            Log.d(TAG, "Contain deleted successfully!");
-        } catch (Exception e) {
-            Log.d(TAG, "Error while deleting Table: " + WARNING_TABLE);
-            e.getMessage();
-        } finally {
-            db.endTransaction();
-        }
     }
 }
