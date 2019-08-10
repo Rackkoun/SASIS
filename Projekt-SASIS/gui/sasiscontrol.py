@@ -1,9 +1,20 @@
 import tkinter as tk
+from tkinter import messagebox as msgb
+from tkinter import Menu
 from tkinter.ttk import Notebook
-
 from gui.frame.electricitypanel import ApplianceDeviceControl as elecpanel
 from gui.frame.graphpanel import MonitorringControl as monitorpanel
 from gui.frame.databasepanel import DatabaseContent as dbpanel
+
+### only imported to display version info
+import platform
+import matplotlib
+import seaborn
+import sklearn
+import numpy
+import pandas
+import psycopg2
+
 """ Diese Klasse stellt das Interface fuer die Kontrolle des gesamten Anwendungssystems dar.
 """
 
@@ -14,12 +25,23 @@ class SASISCommandInterface:
         """
         Initialisierung aller Komponenenten des Systems
         """
+
         self.wmain = tk.Tk()  # Hauptfenster
+
+        self.menubar = Menu(self.wmain)
+        #self.wmain.config(menu=self.menubar)
+
+        self.help_menu = None
+        self.option_menu = None
+
+
         self.wtab = Notebook()  # Reiter-Erstellung in dem Hauptfenster
+
         self.elect_panel_tab = elecpanel(self.wtab)  # Erste Reiteransicht: Strom und Bildplan
         self.graph_tab = monitorpanel(self.wtab)  # Zweite Reiteransicht: Graphen und Algorithmen fuer die Darstellung
         self.db_tab = dbpanel(self.wtab)
 
+        #self.option_menu = None
         self.on_create_window()  # Initialisierung aller Elementen in Reitern
 
         pass
@@ -31,6 +53,23 @@ class SASISCommandInterface:
         """
         self.wmain.title('SASIS Control Interface')
         self.wmain.resizable(False, False)
+
+        self.option_menu = Menu(self.menubar, tearoff=0)
+        language = Menu(self.option_menu)
+        language.add_command(label='english', command=None)
+        language.add_command(label='german', command=None)
+        language.add_command(label='french', command=None)
+        self.option_menu.add_cascade(label='language', menu=language)
+        self.option_menu.add_command(label='Exit', command=self.quit_app)
+        self.menubar.add_cascade(label='Option', menu=self.option_menu)
+
+        self.help_menu = Menu(self.menubar)
+        self.help_menu.add_command(label='About App', command=self.show_app_infos)
+        self.help_menu.add_command(label='version', command=self.show_app_version)
+        self.menubar.add_cascade(label='Help', menu=self.help_menu)
+        self.wmain.config(menu=self.menubar)
+
+        #self.menubar.add_cascade(label='about app', menu=self.help_menu)
 
         print("Width: ", self.wmain.winfo_screenwidth(), "height: ", self.wmain.winfo_screenheight())
         self.wtab.add(self.elect_panel_tab.get_panel(), text="Steuerungsansicht")
@@ -106,3 +145,38 @@ class SASISCommandInterface:
         """
 
         self.wmain.mainloop()
+
+    def quit_app(self):
+        result = msgb.askokcancel(title='Close App', message='Do you really want to close App?\n'
+                                                             'click "OK" to confirm')
+        if result:
+            self.wmain.quit()
+            print(result)
+            self.wmain.destroy()
+        else:
+            print(result)
+
+    def show_app_version(self):
+        msgb.showinfo(title='SASIS System Control V-01', message='System for testing Electrical used in a house with '
+                                                                'machine learning\n'
+                                                                 '\n SASIS System is written in Python Version {}\n\n'
+                                                                'Created on August 2019\n'
+                                                                 ' Ruphus'.format(platform.python_version()))
+
+    def show_app_infos(self):
+        msgb.showinfo(title='Version of Python modules use for SASIS',
+                      message='Tkinter version: {}\n'
+                              '\nPandas version: {}\n'
+                              '\nNumpy version: {}\n'
+                              '\nMatplotlib version: {}\n'
+                              '\nPsycopg2 version: {}\n'
+                              '\nSeaborn version: {}\n'
+                              '\nScikit-Learn version {}\n'
+                              '\nPaho-MQTT version: 1.4.0'
+                      .format(tk.TkVersion,
+                              pandas.__version__,
+                              numpy.__version__,
+                              matplotlib.__version__,
+                              psycopg2.__version__,
+                              seaborn.__version__,
+                              sklearn.__version__))

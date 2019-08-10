@@ -19,7 +19,6 @@ class MessageTip:
 
     def show(self):
         "Display text in tooltip window"
-        #self.msg = msg
         if self.tip or not self.msg:
             return
         x, y, _cx, cy = self.gui.bbox("insert")
@@ -40,7 +39,6 @@ class MessageTip:
 
     def on_entry(self, event=None):
         self.check()
-        #self.id = self.gui.after(1500, self.show())
         self.show()
 
     def on_leave(self, event=None):
