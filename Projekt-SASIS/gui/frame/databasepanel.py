@@ -20,8 +20,6 @@ class DatabaseContent:
         self.labelframe = None
         self.btn = None
 
-        self.thread = None
-
         self.db_max = None
         self.db_min = None
         self.db_current = None
@@ -62,7 +60,7 @@ class DatabaseContent:
             print(self.btn['text'], self.btn['state'])
 
             self.write_all()
-            #self.btn.bind('<Button-1>', self.thred_text(self.btn['text']))
+
         time.sleep(.5)
 
         self.btn.configure(text='Load Content')
@@ -119,19 +117,3 @@ class DatabaseContent:
 
         self.db_current = Label(master=self.labelframe, text=text3)
         self.db_current.grid(column=3, row=2, padx=8, pady=8, sticky='N', columnspan=3)
-    #
-    # def thred_text(self, text, btn):
-    #
-    #     def on_refresh(event):
-    #         if btn['text'] == event == 'Loading...':
-    #             btn.configure(bg='#ffa500')
-    #             time.sleep(.1)
-    #             print(btn['text'])
-    #         else:
-    #             btn.configure(text='Load Content')
-    #             btn.configure(bg='#00bfff')
-    #             time.sleep(.1)
-    #             print(btn['text'])
-    #     t = Thread(target=on_refresh, args=(text, ))
-    #     self.thread = t
-    #     self.thread.start()

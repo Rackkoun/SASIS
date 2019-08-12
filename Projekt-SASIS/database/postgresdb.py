@@ -95,7 +95,6 @@ class PostgreSQLDatabase:
             df = pd.DataFrame(db_content, columns=cols, index=None)
             print("Vor der Bearbeitung ")
             print(df)
-            # df = self.on_preprocessing_data(data=df)
 
         except (Exception, psycopg2.Error) as dberror:
             print("Fehler beim Lesen des DB-Inhalts", dberror)
@@ -129,33 +128,4 @@ class PostgreSQLDatabase:
         print(frame.head(3))
 
         return frame
-#
 
-if __name__ == "__main__":
-    db = PostgreSQLDatabase()
-    connection = db.in_connecting(db.path)
-    #db.write_new_values(879.96, connection)
-    data = db.read_db_content(connection)
-    #data = db.on_preprocessing_data(data=data)
-    grp = data.groupby('datum')['strom'].sum() # erzeuge ein Serie-Objekt
-    reconverted_index = pd.to_datetime(grp.index)
-    df = pd.DataFrame(grp.values, columns=['strom'], index=reconverted_index)
-    df.index.name= None
-    print("DF:\n", df)
-    df['tag'] = df.index.day
-    print(data.head(), "\n", data.dtypes, "\nstrom: ", data.strom.values, " type: ", type(data.strom.values),"\nshape: ", data.strom.values.shape)
-    print("index type: ", type(df.index))
-    idx = len(df.index) -1
-
-    print("INDEX TROUVE: ", str(df.index[idx]))
-    #print(idx.d)
-    print("LOC\n", df.loc[str(df.index[idx])])
-    dd = df.loc[str(df.index[idx])]
-    reconv = pd.to_datetime(df.index[idx].strftime('%Y-%m-%d'))
-    ddd = pd.DataFrame(columns=['strom', 'datum'], index=[reconv])
-    ddd['strom'] = dd['strom']
-    ddd['datum'] = reconv
-    print("Strom: ", dd['strom'], " date ", df.index[idx].strftime('%Y-%m-%d'))
-    print("NEW DF:\n", ddd)
-    print("Len of grouped df: ", len(df))
-    print("COLUMNS: ", len(ddd.columns))

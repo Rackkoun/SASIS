@@ -40,7 +40,7 @@ class SASISCommandInterface:
         self.graph_tab = monitorpanel(self.wtab)  # Zweite Reiteransicht: Graphen und Algorithmen fuer die Darstellung
         self.db_tab = dbpanel(self.wtab)
 
-        #self.option_menu = None
+        self.option_menu = None
         self.on_create_window()  # Initialisierung aller Elementen in Reitern
 
         pass
@@ -68,7 +68,7 @@ class SASISCommandInterface:
         self.help_menu.add_command(label='About App', command=self.show_app_infos)
         self.help_menu.add_command(label='version', command=self.show_app_version)
         self.menubar.add_cascade(label='Help', menu=self.help_menu)
-        #self.wmain.config(menu=self.menubar)
+        self.wmain.config(menu=self.menubar)
 
         self.menubar.add_cascade(label='about app', menu=self.help_menu)
 

@@ -85,36 +85,3 @@ class DataProcessing:
                 current_df = current
                 print("CURRENT:\n", current_df)
         return current_df
-
-#
-# if __name__=='__main__':
-#     test = TestDataGenerator()
-#     ing = DataProcessing()
-#     algo = OneCSVM()
-#
-#     db = server()
-#     #f = './res/config/dbconfig.ini'
-#     #conn = db.in_connecting(file_name=f)
-#     data = test.on_create_test_data('2019-04-01', '2019-07-01', 'D', .3)
-#     X = ing.split_for_sasis(data)
-#     algo.train_one_csvm(X)
-#     pred0 = algo.predict_one_csvm(X)
-#     data2 = ing.after_train_or_predict_data(data, pred0)
-#     x = [[4217.45, 5]]
-#
-#     pred = algo.predict_one_csvm(x)
-#     data2 = ing.on_actualize_data_dict(4217.45, pred, data2)
-#     outliers = ing.detect_outliers(data2)
-#     dd = test.make_quick_gen()
-#
-#     X0 = ing.split_for_sasis(dd)
-#     algo.train_one_csvm(X0)
-#     predd = algo.predict_one_csvm(X0)
-#     d0 = ing.after_train_or_predict_data(dd, predd)
-#
-#     out0 = ing.detect_outliers(d0)
-#     a = out0['2019-07-15':]
-#     ing.check_current_prediction(a)
-#     print(a['vorhersage'])
-#     #ds = db.read_db_content(conn)
-#     #print(ds)

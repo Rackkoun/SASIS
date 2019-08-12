@@ -18,9 +18,7 @@ class SASISActionButton:
         """
 
         :param root:
-        :param master_lf:
         """
-        #self.master_lf = master_lf
         self.btn = Button(master=root, text='OFF', state='normal', command=None, bg='#00bfff', fg='#ffffff', relief=RAISED)
         pass
 

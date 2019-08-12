@@ -6,6 +6,8 @@
 """
 
 from tkinter import Toplevel, Label, LEFT, SOLID
+
+
 class MessageTip:
 
     def __init__(self, gui, msg):
@@ -29,7 +31,7 @@ class MessageTip:
         tw.wm_overrideredirect(1)
         tw.wm_geometry("+%d+%d" % (x, y))
 
-        Label(master=self.tip,  text=self.msg, justify=LEFT, background='#ffffe0', relief=SOLID, borderwidth=1).pack()
+        Label(master=self.tip, text=self.msg, justify=LEFT, background='#ffffe0', relief=SOLID, borderwidth=1).pack()
 
     def hidetip(self):
         tw = self.tip
