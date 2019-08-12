@@ -71,7 +71,7 @@ class DataProcessing:
                     print("DF2\n", current_df)
                 if len(df.columns) > 2:
                     reconverted_idx3 = pd.to_datetime(df.index[last_idx].strftime('%Y-%m-%d'))
-                    df3 = pd.DataFrame(columns=['strom', 'tag', 'monat', 'monat', 'wochentag'], index=[reconverted_idx3])
+                    df3 = pd.DataFrame(columns=['strom', 'tag', 'monat', 'wochentag'], index=[reconverted_idx3])
                     df3['strom'] = last_col['strom']
                     df3['tag'] = df3.index.day
                     df3['monat'] = df3.index.month

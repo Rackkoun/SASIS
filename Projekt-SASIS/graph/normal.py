@@ -78,7 +78,7 @@ class SGraphTK:
         return fig
 
     # https://stackoverflow.com/questions/31594549/how-do-i-change-the-figure-size-for-a-seaborn-plot
-    def on_draw_box(self, x, y, df, h):
+    def on_draw_box(self, x, y, df=None, h=None):
         fig = plt.Figure(figsize=(4.4, 2.7), dpi=80, facecolor='white', constrained_layout=True)
         ax = fig.add_subplot(111)
         sb.boxplot(x=x, y=y, data=df, hue=h, ax=ax)
@@ -89,7 +89,7 @@ class SGraphTK:
 
         return fig
 
-    def on_draw_bar(self, x, y, h, data):
+    def on_draw_bar(self, x, y, h=None, data=None):
         """
 
         :param x:

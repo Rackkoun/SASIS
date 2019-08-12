@@ -29,7 +29,6 @@ class SASISCommandInterface:
         self.wmain = tk.Tk()  # Hauptfenster
 
         self.menubar = Menu(self.wmain)
-        #self.wmain.config(menu=self.menubar)
 
         self.help_menu = None
         self.option_menu = None
@@ -55,11 +54,13 @@ class SASISCommandInterface:
         self.wmain.resizable(False, False)
 
         self.option_menu = Menu(self.menubar, tearoff=0)
+
         language = Menu(self.option_menu)
         language.add_command(label='english', command=None)
         language.add_command(label='german', command=None)
         language.add_command(label='french', command=None)
         self.option_menu.add_cascade(label='language', menu=language)
+
         self.option_menu.add_command(label='Exit', command=self.quit_app)
         self.menubar.add_cascade(label='Option', menu=self.option_menu)
 
@@ -67,9 +68,9 @@ class SASISCommandInterface:
         self.help_menu.add_command(label='About App', command=self.show_app_infos)
         self.help_menu.add_command(label='version', command=self.show_app_version)
         self.menubar.add_cascade(label='Help', menu=self.help_menu)
-        self.wmain.config(menu=self.menubar)
+        #self.wmain.config(menu=self.menubar)
 
-        #self.menubar.add_cascade(label='about app', menu=self.help_menu)
+        self.menubar.add_cascade(label='about app', menu=self.help_menu)
 
         print("Width: ", self.wmain.winfo_screenwidth(), "height: ", self.wmain.winfo_screenheight())
         self.wtab.add(self.elect_panel_tab.get_panel(), text="Steuerungsansicht")

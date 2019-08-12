@@ -8,7 +8,6 @@
 
 import pandas as pd
 import numpy as np
-import datetime as dt
 
 
 class TestDataGenerator:
@@ -43,8 +42,7 @@ class TestDataGenerator:
         return df
 
     def make_quick_gen(self):
-        quick_gen = self.on_create_test_data(start_date='2019-04-01', en_date=dt.date.today() - dt.timedelta(days=12),
-                                             date_periode='D', error=.3)
+        quick_gen = self.on_create_test_data(start_date='2019-04-01', en_date='2019-08-01', date_periode='D', error=.3)
         return quick_gen
 
     def split_for_ml_test(self, df):

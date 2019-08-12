@@ -59,7 +59,7 @@ class MonitorringControl:
         self.model_ellipenv = EllipticEnv()
         self.model_lof = LocOuFac()
 
-        self.broker = "192.168.178.28"  # wird an vergebene WLAN-IP-Adresse angepasst
+        self.broker = "192.168.178.20"  # wird an vergebene WLAN-IP-Adresse angepasst
         self.topic = "strom/bot"        # MQTT-Topic
         self.publisher = sasisMsg()     # MQTT-Klient erstellen
 
@@ -143,6 +143,7 @@ class MonitorringControl:
         hb = new_df['monat'].values
         print("xb: ", xb, " type: ", type(xb))
         print("hb: ", hb)
+
         if grp_style == 'line':
             self.graph_norm_dict[grp_style] = graph
             fig = self.graph_norm_dict[grp_style].on_draw_line(x=x, y=y, xlab='Tage (In Integer)',
@@ -154,13 +155,13 @@ class MonitorringControl:
             fig = self.graph_norm_dict[grp_style].on_draw_scatter(x=x, y=y, d=new_df, h=xb)
             self.graph_norm_dict[grp_style].put_graph_on_canvas(fig=fig)
         if grp_style == 'box':
-            self.graph_norm_dict[grp_style] = graph
-            fig = self.graph_norm_dict[grp_style].on_draw_box(x=xb, y=y, df=new_df, h='wochentag')
-            self.graph_norm_dict[grp_style].put_graph_on_canvas(fig=fig)
+           self.graph_norm_dict[grp_style] = graph
+           fig = self.graph_norm_dict[grp_style].on_draw_box(x=xb, y=y, df=new_df, h='wochentag')
+           self.graph_norm_dict[grp_style].put_graph_on_canvas(fig=fig)
         if grp_style == 'bar':
-            self.graph_norm_dict[grp_style] = graph
-            fig = self.graph_norm_dict[grp_style].on_draw_bar(x=xb, y=y, h='monat', data=new_df)
-            self.graph_norm_dict[grp_style].put_graph_on_canvas(fig=fig)
+           self.graph_norm_dict[grp_style] = graph
+           fig = self.graph_norm_dict[grp_style].on_draw_bar(x=xb, y=y, h='monat', data=new_df)
+           self.graph_norm_dict[grp_style].put_graph_on_canvas(fig=fig)
         print(self.graph_algo_dict.keys())
 
     def on_add_graph_down(self, algo_name, col, row, px, py, x, y, x1=None, y1=None, x2=None, y2=None, pred=None):
@@ -194,45 +195,99 @@ class MonitorringControl:
             df = self.server.read_db_content(connection)
             print("GROBE DATEN VOM SERVER:\n", df.head(4))
 
+
             df2 = self.data_ing.on_getting_data_from_server(df)
             print("DATEN nach der Gruppierung: \n", df2)
 
             print("len von df2 (Gruppiert): ", len(df2))
+            if len(df2) >= 1:
+                print("LOF len before: ", len(self.data.keys()))
 
-            current_use = self.data_ing.select_current_value(df2)
-            print("Heutige Verbrauch:\n", current_use)
-            print("Len of Current: ", len(current_use))
+                if 'Local Outliers Factor' not in self.data.keys():
+                    X = self.data_ing.split_for_sasis(df2)
+                    print("TMPF\n", X)
+                    p = self.model_lof.predict_locoufac(X)
+                    print("LOF DATA WAS EMPTY: predict: \n", p)
+                    df2 = self.data_ing.after_train_or_predict_data(df2, p)
 
-            X = self.data_ing.split_for_sasis(current_use)
-            x_pred = self.model_one.predict_one_csvm(X)
-            print("Prediction: ", x_pred)
+                    idx = pd.to_datetime(df2.index[len(df2.index)-1]).strftime('%Y-%m-%d')
+                    tmp_df = df2.loc[idx]
+                    strom = tmp_df['strom']
+                    tag = tmp_df['tag']
+                    monat = tmp_df['monat']
+                    jahr = tmp_df['jahr']
+                    vorhersage = tmp_df['vorhersage']
+                    print("TMP_DF\n", tmp_df)
 
-            current_use = self.data_ing.after_train_or_predict_data(current_use, x_pred)
+                    current_use = pd.DataFrame(columns=['strom', 'tag', 'monat', 'jahr', 'vorhersage'], index=[idx])# select current
+                    current_use['strom'] = strom
+                    current_use['tag'] = tag
+                    current_use['monat'] = monat
+                    current_use['jahr'] = jahr
+                    current_use['vorhersage'] = vorhersage
+                    print("Heutige Verbrauch inside:\n", current_use)
+                    print("Len of Current inside: ", len(current_use))
 
-            print("current use modified: ", current_use)
+                    self.data['Local Outliers Factor'] = df2
 
-            self.data['Local Outliers Factor'] = self.data_ing.on_actualize_data_dict(current_use, self.data[
-                'Local Outliers Factor'])
-            x = self.data['Local Outliers Factor']['tag'].values
-            y = self.data['Local Outliers Factor']['strom'].values
-            print("X: ", x, " Y: ", y)
-            print("Value in DF: \n", self.data['Local Outliers Factor'].tail(3))
+                    x = self.data['Local Outliers Factor']['tag'].values
+                    y = self.data['Local Outliers Factor']['strom'].values
+                    print("X: ", x, " Y: ", y)
+                    print("Value in DF: \n", self.data['Local Outliers Factor'].tail(3))
 
-            outliers = self.data_ing.detect_outliers(self.data['Local Outliers Factor'])
-            x1 = outliers.tag.values
-            y1 = outliers.strom.values
-            print("X1: ", x1, " Y1: ", y1)
-            print("Outliers:\n", outliers)
+                    outliers = self.data_ing.detect_outliers(self.data['Local Outliers Factor'])
+                    x1 = outliers.tag.values
+                    y1 = outliers.strom.values
+                    print("X1: ", x1, " Y1: ", y1)
+                    print("Outliers:\n", outliers)
 
-            x2 = current_use['tag'].values
-            y2 = current_use['strom'].values
-            print("X2: ", x2, " Y2: ", y2)
-            print("Current use table:\n", current_use)
-            fig = self.graph_algo_dict['Local Outliers Factor'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2, pred=x_pred,
-                                                                     algo_name='Local Outliers Factor')
-            self.graph_algo_dict['Local Outliers Factor'].on_update_canvas(fig=fig)
+                    x2 = current_use['tag'].values
+                    y2 = current_use['strom'].values
+                    x_pred = current_use['vorhersage'].values
+                    print("X2: ", x2, " Y2: ", y2)
+                    print("Current use table inside:\n", current_use)
+                    fig = self.graph_algo_dict['Local Outliers Factor'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2,
+                                                                             pred=x_pred,
+                                                                             algo_name='Local Outliers Factor')
+                    self.graph_algo_dict['Local Outliers Factor'].on_update_canvas(fig=fig)
 
-            self.check_current_prediction(current_use) # entscheide, ob der Wert zu warnen ist oder nicht
+                    self.check_current_prediction(current_use)  # entscheide, ob der Wert zu warnen ist oder nicht
+                else:
+                    print("LOF DATA IS NOT EMPTY:\n")
+                    current_use = self.data_ing.select_current_value(df2)
+                    print("Heutige Verbrauch:\n", current_use)
+                    print("Len of Current: ", len(current_use))
+
+                    X = self.data_ing.split_for_sasis(current_use)
+                    x_pred = self.model_lof.predict_locoufac(X)
+                    print("Prediction: ", x_pred)
+
+                    current_use = self.data_ing.after_train_or_predict_data(current_use, x_pred)
+
+                    print("current use modified: ", current_use)
+                    print("LOF len:--->", len(self.data.keys()))
+                    self.data['Local Outliers Factor'] = self.data_ing.on_actualize_data_dict(current_use, self.data[
+                        'Local Outliers Factor'])
+                    x = self.data['Local Outliers Factor']['tag'].values
+                    y = self.data['Local Outliers Factor']['strom'].values
+                    print("X: ", x, " Y: ", y)
+                    print("Value in DF: \n", self.data['Local Outliers Factor'].tail(3))
+
+                    outliers = self.data_ing.detect_outliers(self.data['Local Outliers Factor'])
+                    x1 = outliers.tag.values
+                    y1 = outliers.strom.values
+                    print("X1: ", x1, " Y1: ", y1)
+                    print("Outliers:\n", outliers)
+
+                    x2 = current_use['tag'].values
+                    y2 = current_use['strom'].values
+                    print("X2: ", x2, " Y2: ", y2)
+                    print("Current use table:\n", current_use)
+                    fig = self.graph_algo_dict['Local Outliers Factor'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2, pred=x_pred,
+                                                                             algo_name='Local Outliers Factor')
+                    self.graph_algo_dict['Local Outliers Factor'].on_update_canvas(fig=fig)
+
+                    self.check_current_prediction(current_use) # entscheide, ob der Wert zu warnen ist oder nicht
         else:
             self.rgrp['Local Outliers Factor']['state'] = 'DISABLE'
             print(self.rgrp['Local Outliers Factor']['state'])
@@ -250,39 +305,96 @@ class MonitorringControl:
             print("DATEN nach der Gruppierung: \n", df2)
 
             print("len von df2 (Gruppiert): ", len(df2))
+            if len(df2) >= 1:
 
-            current_use = self.data_ing.select_current_value(df2)
-            print("Heutige Verbrauch:\n", current_use)
-            print("Len of Current: ", len(current_use))
+                if 'Isolation Forest' not in self.data.keys():
+                    print("ISOF len before: ", len(self.data.keys()))
+                    X = self.data_ing.split_for_sasis(df2)
+                    print("TMPF\n", X)
+                    p = self.model_isof.predict_isolfo(X)
+                    print("ISOF DATA WAS EMPTY: predict: \n", p)
+                    df2 = self.data_ing.after_train_or_predict_data(df2, p)
 
-            X = self.data_ing.split_for_sasis(current_use)
-            x_pred = self.model_one.predict_one_csvm(X)
-            print("Prediction: ", x_pred)
+                    idx = pd.to_datetime(df2.index[len(df2.index) - 1]).strftime('%Y-%m-%d')
+                    tmp_df = df2.loc[idx]
+                    strom = tmp_df['strom']
+                    tag = tmp_df['tag']
+                    monat = tmp_df['monat']
+                    jahr = tmp_df['jahr']
+                    vorhersage = tmp_df['vorhersage']
+                    print("TMP_DF\n", tmp_df)
 
-            current_use = self.data_ing.after_train_or_predict_data(current_use, x_pred)
+                    current_use = pd.DataFrame(columns=['strom', 'tag', 'monat', 'jahr', 'vorhersage'],
+                                               index=[idx])
+                    current_use['strom'] = strom
+                    current_use['tag'] = tag
+                    current_use['monat'] = monat
+                    current_use['jahr'] = jahr
+                    current_use['vorhersage'] = vorhersage
+                    print("Heutige Verbrauch inside:\n", current_use)
+                    print("Len of Current inside: ", len(current_use))
 
-            print("current use modified: ", current_use)
+                    self.data['Isolation Forest'] = df2
 
-            self.data['Isolation Forest'] = self.data_ing.on_actualize_data_dict(current_use, self.data[
-                'Isolation Forest'])
-            x = self.data['Isolation Forest']['tag'].values
-            y = self.data['Isolation Forest']['strom'].values
-            print("Value in DF: \n", self.data['Isolation Forest'].tail(3))
+                    x = self.data['Isolation Forest']['tag'].values
+                    y = self.data['Isolation Forest']['strom'].values
+                    print("X: ", x, " Y: ", y)
+                    print("Value in DF: \n", self.data['Isolation Forest'].tail(3))
 
-            outliers = self.data_ing.detect_outliers(self.data['Isolation Forest'])
-            x1 = outliers.tag.values
-            y1 = outliers.strom.values
-            print("Outliers:\n", outliers)
+                    outliers = self.data_ing.detect_outliers(self.data['Isolation Forest'])
+                    x1 = outliers.tag.values
+                    y1 = outliers.strom.values
+                    print("X1: ", x1, " Y1: ", y1)
+                    print("Outliers:\n", outliers)
 
-            x2 = current_use['tag'].values
-            y2 = current_use['strom'].values
-            print("X2: ", x2, " Y2: ", y2)
-            print("Current use table:\n", current_use)
-            fig = self.graph_algo_dict['Isolation Forest'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2, pred=x_pred,
-                                                                algo_name='Isolation Forest')
-            self.graph_algo_dict['Isolation Forest'].on_update_canvas(fig=fig)
+                    x2 = current_use['tag'].values
+                    y2 = current_use['strom'].values
+                    x_pred = current_use['vorhersage'].values
+                    print("X2: ", x2, " Y2: ", y2)
+                    print("Current use table inside:\n", current_use)
+                    fig = self.graph_algo_dict['Isolation Forest'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2,
+                                                                             pred=x_pred,
+                                                                             algo_name='Isolation Forest')
+                    self.graph_algo_dict['Isolation Forest'].on_update_canvas(fig=fig)
 
-            self.check_current_prediction(current_use)
+                    self.check_current_prediction(current_use)  # entscheide, ob der Wert zu warnen ist oder nicht
+                else:
+                    print("ISOF DATA IS NOT EMPTY:\n")
+                    current_use = self.data_ing.select_current_value(df2)
+                    print("Heutige Verbrauch:\n", current_use)
+                    print("Len of Current: ", len(current_use))
+
+                    X = self.data_ing.split_for_sasis(current_use)
+                    x_pred = self.model_isof.predict_isolfo(X)
+                    print("Prediction: ", x_pred)
+
+                    current_use = self.data_ing.after_train_or_predict_data(current_use, x_pred)
+
+                    print("current use modified: ", current_use)
+                    print("ISOF len:--->", len(self.data.keys()))
+                    self.data['Isolation Forest'] = self.data_ing.on_actualize_data_dict(current_use, self.data[
+                        'Isolation Forest'])
+                    x = self.data['Isolation Forest']['tag'].values
+                    y = self.data['Isolation Forest']['strom'].values
+                    print("X: ", x, " Y: ", y)
+                    print("Value in DF: \n", self.data['Isolation Forest'].tail(3))
+
+                    outliers = self.data_ing.detect_outliers(self.data['Isolation Forest'])
+                    x1 = outliers.tag.values
+                    y1 = outliers.strom.values
+                    print("X1: ", x1, " Y1: ", y1)
+                    print("Outliers:\n", outliers)
+
+                    x2 = current_use['tag'].values
+                    y2 = current_use['strom'].values
+                    print("X2: ", x2, " Y2: ", y2)
+                    print("Current use table:\n", current_use)
+                    fig = self.graph_algo_dict['Isolation Forest'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2,
+                                                                             pred=x_pred,
+                                                                             algo_name='Isolation Forest')
+                    self.graph_algo_dict['Isolation Forest'].on_update_canvas(fig=fig)
+
+                    self.check_current_prediction(current_use)  # entscheide, ob der Wert zu warnen ist oder nicht
         else:
             self.rgrp['Isolation Forest']['state'] = 'DISABLE'
             print(self.rgrp['Isolation Forest']['state'])
@@ -300,40 +412,96 @@ class MonitorringControl:
             print("DATEN nach der Gruppierung: \n", df2)
 
             print("len von df2 (Gruppiert): ", len(df2))
+            if len(df2) >= 1:
 
-            current_use = self.data_ing.select_current_value(df2)
-            print("Heutige Verbrauch:\n", current_use)
-            print("Len of Current: ", len(current_use))
+                if 'Elliptic Envelope' not in self.data.keys():
+                    print("ELLIPENV len before: ", len(self.data.keys()))
+                    X = self.data_ing.split_for_sasis(df2)
+                    print("TMPF\n", X)
+                    p = self.model_ellipenv.predict_ellipenv(X)
+                    print("ELLIPENV DATA WAS EMPTY: predict: \n", p)
+                    df2 = self.data_ing.after_train_or_predict_data(df2, p)
 
-            X = self.data_ing.split_for_sasis(current_use)
-            x_pred = self.model_one.predict_one_csvm(X)
-            print("Prediction: ", x_pred)
+                    idx = pd.to_datetime(df2.index[len(df2.index) - 1]).strftime('%Y-%m-%d')
+                    tmp_df = df2.loc[idx]
+                    strom = tmp_df['strom']
+                    tag = tmp_df['tag']
+                    monat = tmp_df['monat']
+                    jahr = tmp_df['jahr']
+                    vorhersage = tmp_df['vorhersage']
+                    print("TMP_DF\n", tmp_df)
 
-            current_use = self.data_ing.after_train_or_predict_data(current_use, x_pred)
+                    current_use = pd.DataFrame(columns=['strom', 'tag', 'monat', 'jahr', 'vorhersage'],
+                                               index=[idx])
+                    current_use['strom'] = strom
+                    current_use['tag'] = tag
+                    current_use['monat'] = monat
+                    current_use['jahr'] = jahr
+                    current_use['vorhersage'] = vorhersage
+                    print("Heutige Verbrauch inside:\n", current_use)
+                    print("Len of Current inside: ", len(current_use))
 
-            print("current use modified: ", current_use)
+                    self.data['Elliptic Envelope'] = df2
 
-            self.data['Elliptic Envelope'] = self.data_ing.on_actualize_data_dict(current_use, self.data[
-                'Elliptic Envelope'])
-            x = self.data['Elliptic Envelope']['tag'].values
-            y = self.data['Elliptic Envelope']['strom'].values
-            print("Value in DF: \n", self.data['Elliptic Envelope'].tail(3))
+                    x = self.data['Elliptic Envelope']['tag'].values
+                    y = self.data['Elliptic Envelope']['strom'].values
+                    print("X: ", x, " Y: ", y)
+                    print("Value in DF: \n", self.data['Elliptic Envelope'].tail(3))
 
-            outliers = self.data_ing.detect_outliers(self.data['Elliptic Envelope'])
-            x1 = outliers.tag.values
-            y1 = outliers.strom.values
-            print("X1: ", x1, " Y1: ", y1)
-            print("Outliers:\n", outliers)
+                    outliers = self.data_ing.detect_outliers(self.data['Elliptic Envelope'])
+                    x1 = outliers.tag.values
+                    y1 = outliers.strom.values
+                    print("X1: ", x1, " Y1: ", y1)
+                    print("Outliers:\n", outliers)
 
-            x2 = current_use['tag'].values
-            y2 = current_use['strom'].values
-            print("Current use table:\n", current_use)
+                    x2 = current_use['tag'].values
+                    y2 = current_use['strom'].values
+                    x_pred = current_use['vorhersage'].values
+                    print("X2: ", x2, " Y2: ", y2)
+                    print("Current use table inside:\n", current_use)
+                    fig = self.graph_algo_dict['Elliptic Envelope'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2,
+                                                                        pred=x_pred,
+                                                                        algo_name='Elliptic Envelope')
+                    self.graph_algo_dict['Elliptic Envelope'].on_update_canvas(fig=fig)
 
-            fig = self.graph_algo_dict['Elliptic Envelope'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2, pred=x_pred,
-                                                                 algo_name='Elliptic Envelope')
-            self.graph_algo_dict['Elliptic Envelope'].on_update_canvas(fig=fig)
+                    self.check_current_prediction(current_use)  # entscheide, ob der Wert zu warnen ist oder nicht
+                else:
+                    print("ELLIPENV DATA IS NOT EMPTY:\n")
+                    current_use = self.data_ing.select_current_value(df2)
+                    print("Heutige Verbrauch:\n", current_use)
+                    print("Len of Current: ", len(current_use))
 
-            self.check_current_prediction(current_use)
+                    X = self.data_ing.split_for_sasis(current_use)
+                    x_pred = self.model_ellipenv.predict_ellipenv(X)
+                    print("Prediction: ", x_pred)
+
+                    current_use = self.data_ing.after_train_or_predict_data(current_use, x_pred)
+
+                    print("current use modified: ", current_use)
+                    print("ELLIPENV len:--->", len(self.data.keys()))
+                    self.data['Elliptic Envelope'] = self.data_ing.on_actualize_data_dict(current_use, self.data[
+                        'Elliptic Envelope'])
+                    x = self.data['Elliptic Envelope']['tag'].values
+                    y = self.data['Elliptic Envelope']['strom'].values
+                    print("X: ", x, " Y: ", y)
+                    print("Value in DF: \n", self.data['Elliptic Envelope'].tail(3))
+
+                    outliers = self.data_ing.detect_outliers(self.data['Elliptic Envelope'])
+                    x1 = outliers.tag.values
+                    y1 = outliers.strom.values
+                    print("X1: ", x1, " Y1: ", y1)
+                    print("Outliers:\n", outliers)
+
+                    x2 = current_use['tag'].values
+                    y2 = current_use['strom'].values
+                    print("X2: ", x2, " Y2: ", y2)
+                    print("Current use table:\n", current_use)
+                    fig = self.graph_algo_dict['Elliptic Envelope'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2,
+                                                                        pred=x_pred,
+                                                                        algo_name='Elliptic Envelope')
+                    self.graph_algo_dict['Elliptic Envelope'].on_update_canvas(fig=fig)
+
+                    self.check_current_prediction(current_use)  # entscheide, ob der Wert zu warnen ist oder nicht
         else:
             self.rgrp['Elliptic Envelope']['state'] = 'DISABLE'
             print(self.rgrp['Elliptic Envelope']['state'])
@@ -350,39 +518,96 @@ class MonitorringControl:
             df2 = self.data_ing.on_getting_data_from_server(df)
             print("DATEN nach der Gruppierung: \n", df2)
 
-            print("len von df2 (Gruppiert): ", len(df2))
+            if len(df2) >= 1:
 
-            current_use = self.data_ing.select_current_value(df2)
-            print("Heutige Verbrauch:\n", current_use)
-            print("Len of Current: ", len(current_use))
+                if 'One Class SVM' not in self.data.keys():
+                    print("ONECSVM len before: ", len(self.data.keys()))
+                    X = self.data_ing.split_for_sasis(df2)
+                    print("TMPF\n", X)
+                    p = self.model_one.predict_one_csvm(X)
+                    print("ONCSVM DATA WAS EMPTY: predict: \n", p)
+                    df2 = self.data_ing.after_train_or_predict_data(df2, p)
 
-            X = self.data_ing.split_for_sasis(current_use)
-            x_pred = self.model_one.predict_one_csvm(X)
-            print("Prediction: ", x_pred)
+                    idx = pd.to_datetime(df2.index[len(df2.index) - 1]).strftime('%Y-%m-%d')
+                    tmp_df = df2.loc[idx]
+                    strom = tmp_df['strom']
+                    tag = tmp_df['tag']
+                    monat = tmp_df['monat']
+                    jahr = tmp_df['jahr']
+                    vorhersage = tmp_df['vorhersage']
+                    print("TMP_DF\n", tmp_df)
 
-            current_use = self.data_ing.after_train_or_predict_data(current_use, x_pred)
+                    current_use = pd.DataFrame(columns=['strom', 'tag', 'monat', 'jahr', 'vorhersage'],
+                                               index=[idx])
+                    current_use['strom'] = strom
+                    current_use['tag'] = tag
+                    current_use['monat'] = monat
+                    current_use['jahr'] = jahr
+                    current_use['vorhersage'] = vorhersage
+                    print("Heutige Verbrauch inside:\n", current_use)
+                    print("Len of Current inside: ", len(current_use))
 
-            print("current use modified: ", current_use)
+                    self.data['One Class SVM'] = df2
 
-            self.data['One Class SVM'] = self.data_ing.on_actualize_data_dict(current_use, self.data[
-                'One Class SVM'])
-            x = self.data['One Class SVM']['tag'].values
-            y = self.data['One Class SVM']['strom'].values
-            print("Value in DF: \n", self.data['One Class SVM'].tail(3))
+                    x = self.data['One Class SVM']['tag'].values
+                    y = self.data['One Class SVM']['strom'].values
+                    print("X: ", x, " Y: ", y)
+                    print("Value in DF: \n", self.data['One Class SVM'].tail(3))
 
-            outliers = self.data_ing.detect_outliers(self.data['One Class SVM'])
-            x1 = outliers.tag.values
-            y1 = outliers.strom.values
-            print("Outliers:\n", outliers)
+                    outliers = self.data_ing.detect_outliers(self.data['One Class SVM'])
+                    x1 = outliers.tag.values
+                    y1 = outliers.strom.values
+                    print("X1: ", x1, " Y1: ", y1)
+                    print("Outliers:\n", outliers)
 
-            x2 = current_use['tag'].values
-            y2 = current_use['strom'].values
-            print("Current use table:\n", current_use)
-            fig = self.graph_algo_dict['One Class SVM'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2, pred=x_pred,
-                                                             algo_name='One Class SVM')
-            self.graph_algo_dict['One Class SVM'].on_update_canvas(fig=fig)
+                    x2 = current_use['tag'].values
+                    y2 = current_use['strom'].values
+                    x_pred = current_use['vorhersage'].values
+                    print("X2: ", x2, " Y2: ", y2)
+                    print("Current use table inside:\n", current_use)
+                    fig = self.graph_algo_dict['One Class SVM'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2,
+                                                                         pred=x_pred,
+                                                                         algo_name='One Class SVM')
+                    self.graph_algo_dict['One Class SVM'].on_update_canvas(fig=fig)
 
-            self.check_current_prediction(current_use)
+                    self.check_current_prediction(current_use)  # entscheide, ob der Wert zu warnen ist oder nicht
+                else:
+                    print("ONESVM DATA IS NOT EMPTY:\n")
+                    current_use = self.data_ing.select_current_value(df2)
+                    print("Heutige Verbrauch:\n", current_use)
+                    print("Len of Current: ", len(current_use))
+
+                    X = self.data_ing.split_for_sasis(current_use)
+                    x_pred = self.model_one.predict_one_csvm(X)
+                    print("Prediction: ", x_pred)
+
+                    current_use = self.data_ing.after_train_or_predict_data(current_use, x_pred)
+
+                    print("current use modified: ", current_use)
+                    print("ONESCVM len:--->", len(self.data.keys()))
+                    self.data['One Class SVM'] = self.data_ing.on_actualize_data_dict(current_use, self.data[
+                        'One Class SVM'])
+                    x = self.data['One Class SVM']['tag'].values
+                    y = self.data['One Class SVM']['strom'].values
+                    print("X: ", x, " Y: ", y)
+                    print("Value in DF: \n", self.data['One Class SVM'].tail(3))
+
+                    outliers = self.data_ing.detect_outliers(self.data['One Class SVM'])
+                    x1 = outliers.tag.values
+                    y1 = outliers.strom.values
+                    print("X1: ", x1, " Y1: ", y1)
+                    print("Outliers:\n", outliers)
+
+                    x2 = current_use['tag'].values
+                    y2 = current_use['strom'].values
+                    print("X2: ", x2, " Y2: ", y2)
+                    print("Current use table:\n", current_use)
+                    fig = self.graph_algo_dict['One Class SVM'].draw(x=x, y=y, x1=x1, y1=y1, x2=x2, y2=y2,
+                                                                         pred=x_pred,
+                                                                         algo_name='One Class SVM')
+                    self.graph_algo_dict['One Class SVM'].on_update_canvas(fig=fig)
+
+                    self.check_current_prediction(current_use)  # entscheide, ob der Wert zu warnen ist oder nicht
         else:
             self.rgrp['One Class SVM']['state'] = 'DISABLE'
             print(self.rgrp['One Class SVM']['state'])
@@ -392,22 +617,20 @@ class MonitorringControl:
         tmp_df = test.make_quick_gen()             # generiere Test daten
         X = self.data_ing.split_for_sasis(tmp_df)  # wähle die zu trainierenden Spalten daraus
                                                    # trainiere die mit allen Algorithmen
+                                                   # die trainierten Daten sollen nicht vorhergesagt
+                                                   # werden, sonst wird das Ergebnis falsch
+
         self.model_ellipenv.train_ellipenv(X)
         self.model_isof.train_isolfo(X)
         self.model_lof.train_locoufac(X)
         self.model_one.train_one_csvm(X)
-                                                   # dann probiere eine kleine Vorhersage damit
-                                                   # (Normalerweise nicht empfohlen)
-        epred = self.model_ellipenv.predict_ellipenv(X)
-        ipred = self.model_isof.predict_isolfo(X)
-        lpred = self.model_lof.predict_locoufac(X)
-        opred = self.model_one.predict_one_csvm(X)
+
                                                    # füge eine neue Spalte hinzu,
                                                    # welche die vorhergesagenen Daten erhält
-        self.data['Elliptic Envelope'] = self.data_ing.after_train_or_predict_data(tmp_df, epred)
-        self.data['Isolation Forest'] = self.data_ing.after_train_or_predict_data(tmp_df, ipred)
-        self.data['Local Outliers Factor'] = self.data_ing.after_train_or_predict_data(tmp_df, lpred)
-        self.data['One Class SVM'] = self.data_ing.after_train_or_predict_data(tmp_df, opred)
+        #self.data['Elliptic Envelope'] = self.data_ing.after_train_or_predict_data(tmp_df, epred)
+        #self.data['Isolation Forest'] = self.data_ing.after_train_or_predict_data(tmp_df, ipred)
+        #self.data['Local Outliers Factor'] = self.data_ing.after_train_or_predict_data(tmp_df, lpred)
+        #self.data['One Class SVM'] = self.data_ing.after_train_or_predict_data(tmp_df, opred)
 
     def check_current_prediction(self, df):
         """
@@ -425,9 +648,14 @@ class MonitorringControl:
             print("Outlier... ")
             if df['strom'].values > 4019.59:
                 print("Zu warnen... ")
-                msg = df['strom'].values
-                self.publisher.on_connect_to_broker(broker=self.broker, port=1883, alive=65)  # sende per MQTT
-                self.publisher.on_publishing(topic=self.topic, msg=str(msg[0]), qos=1)
+                v = None
+                try:
+                    msg = df['strom'].values
+                    self.publisher.on_connect_to_broker(broker=self.broker, port=1883, alive=65)  # sende per MQTT
+                    self.publisher.on_publishing(topic=self.topic, msg=str(msg[0]), qos=1)
+                    v = msg
+                except:
+                    raise Exception('Connection not established: Value {} has not been sent'.format(v))
             else:
                 print(" Wird ingnoriert...")
 
@@ -439,16 +667,16 @@ class MonitorringControl:
 
             connection = self.server.in_connecting(self.config_file)
             df = self.server.read_db_content(connection)
-
-            grp = df.groupby('datum')['strom'].sum()  # erzeuge ein Serie-Objekt
-            print(grp.values)
-            reconverted_index = pd.to_datetime(grp.index)
-            new_df = pd.DataFrame(grp.values, columns=['strom'], dtype=np.float, index=reconverted_index)
-            new_df.index.name = None
-            new_df['tag'] = new_df.index.day
-            new_df['monat'] = new_df.index.month
-            new_df['jahr'] = new_df.index.year
-            new_df['wochentag'] = new_df.index.weekday_name
+            new_df = self.data_ing.on_getting_data_from_server(df)
+            # grp = df.groupby('datum')['strom'].sum()  # erzeuge ein Serie-Objekt
+            # print(grp.values)
+            # reconverted_index = pd.to_datetime(grp.index)
+            # new_df = pd.DataFrame(grp.values, columns=['strom'], dtype=np.float, index=reconverted_index)
+            # new_df.index.name = None
+            # new_df['tag'] = new_df.index.day
+            # new_df['monat'] = new_df.index.month
+            # new_df['jahr'] = new_df.index.year
+            # new_df['wochentag'] = new_df.index.weekday_name
 
             print(new_df)
             x = new_df['tag'].values
