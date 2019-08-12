@@ -76,20 +76,18 @@ public class MainActivity extends AppCompatActivity {
     private SimpleDateFormat sdf_time = new SimpleDateFormat("hh:mm:ss");
 
     private double currentMaxUse = 0;
-    BOTMQTTDB helper;
-    SQLiteDatabase database;
-    WarningManager manager = new WarningManager();
+    private BOTMQTTDB helper;
+    private SQLiteDatabase database;
+    private WarningManager manager = new WarningManager();
 
-    Vibrator vibrator;
+    private Vibrator vibrator;
 
-    int inc = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         onInitializedViews();
-
         onCreateAndroidClientMQTT();
     }
 
@@ -100,25 +98,17 @@ public class MainActivity extends AppCompatActivity {
                 final IMqttToken mqttToken = androidClient.subscribe(top, 0);
                 Log.d(TAG,"Client : "+ androidClient +" subscribes to: "+ top);
 
-                // must do a call back
                 mqttToken.setActionCallback(new IMqttActionListener() {
                     @Override
-                    public void onSuccess(IMqttToken asyncActionToken) {
-                        // set Text view 2
-                        Log.d(TAG,"SUBSCRIPTION SUCCESS ");
-                    }
+                    public void onSuccess(IMqttToken asyncActionToken) {Log.d(TAG,"SUBSCRIPTION SUCCESS ");}
 
                     @Override
-                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-
-                    }
+                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {}
                 });
 
                 androidClient.setCallback(new MqttCallback() {
                     @Override
-                    public void connectionLost(Throwable cause) {
-
-                    }
+                    public void connectionLost(Throwable cause) {}
 
                     @Override
                     public void messageArrived(String topic, MqttMessage message){
@@ -136,9 +126,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void deliveryComplete(IMqttDeliveryToken token) {
-
-                    }
+                    public void deliveryComplete(IMqttDeliveryToken token) {}
                 });
             }
         }catch (MqttException e){e.printStackTrace();}
@@ -163,10 +151,9 @@ public class MainActivity extends AppCompatActivity {
     private void onCreateAndroidClientMQTT(){
 
         String clientID = "Android-PHONE-NEX05";
-        String server = "tcp://192.168.178.20:1883";
+        String server = "tcp://192.168.178.xx:1883";
 
-        androidClient = new MqttAndroidClient(this.getApplicationContext(), server,
-                clientID);
+        androidClient = new MqttAndroidClient(this.getApplicationContext(), server, clientID);
 
         try {
             IMqttToken token = androidClient.connect();
@@ -176,16 +163,11 @@ public class MainActivity extends AppCompatActivity {
                     // We are connected
                     Log.d(TAG, "onSuccess");
                     Toast.makeText(getApplicationContext(),"CONNECTED",Toast.LENGTH_LONG).show();
-
                     subscr(topicMsg);
                 }
 
                 @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    // Something went wrong e.g. connection timeout or firewall problems
-                    Log.d(TAG, "onFailure");
-
-                }
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {Log.d(TAG, "onFailure");}
             });
         } catch (MqttException e) {
             e.printStackTrace();
@@ -230,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
         entries.add(new Entry(0.0f, 0.0f)); // add values to an  entry
         xaxis.add("0");
 
-        // add to avoid App-crash
+        // added to avoid App-crash
         if (warnings != null && warnings.size() > 0){
             for(int i = 0; i < warnings.size(); i++){
                 entries.add(new Entry((float) (i+1), Double.valueOf(warnings.get(i).getValue()).floatValue()));
@@ -308,10 +290,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onUpdateGraph(Warning warning){
-            inc = graph.getData().getEntryCount();
         if(graph.getData() != null && graph.getData().getEntryCount() > 0){
             Log.d(TAG, "Number of ENTRY: " + graph.getData().getEntryCount());
-            entries.add(new Entry((float) inc, Double.valueOf(warning.getValue()).floatValue()));
+            entries.add(new Entry((float) graph.getData().getEntryCount() + 1, Double.valueOf(warning.getValue()).floatValue()));
             xaxis.add(warning.getDate());
             if(warning.getValue() > currentMaxUse){
                 msg_tv.setText(String.valueOf(warning.getValue()));
@@ -322,8 +303,6 @@ public class MainActivity extends AppCompatActivity {
                     vibrator.vibrate(VibrationEffect
                             .createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
                 }
-
-                //onNotify(warning.getValue());
             }
             lineDataSet.setValues(entries);
 
@@ -338,7 +317,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         }
-        inc++;
     }
 
     private void setGraphViewPort(){

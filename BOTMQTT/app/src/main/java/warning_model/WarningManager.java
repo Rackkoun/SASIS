@@ -54,7 +54,7 @@ public class WarningManager {
 
         List<Warning> reorderedList  = groupDaily(list);
         final Comparator<Warning> datetimeComparator = //get Max of Object
-                (p1, p2) -> Long.compare(p1.getDatetime(), p2.getDatetime());
+                Comparator.comparingLong(Warning::getDatetime);
 
         Log.d(getClass().getSimpleName(),"size reordered List: " + reorderedList.size());
         List<Warning> l = reorderedList.stream()
