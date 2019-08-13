@@ -70,8 +70,6 @@ class SASISCommandInterface:
         self.menubar.add_cascade(label='Help', menu=self.help_menu)
         self.wmain.config(menu=self.menubar)
 
-        self.menubar.add_cascade(label='about app', menu=self.help_menu)
-
         print("Width: ", self.wmain.winfo_screenwidth(), "height: ", self.wmain.winfo_screenheight())
         self.wtab.add(self.elect_panel_tab.get_panel(), text="Steuerungsansicht")
         self.elect_panel_tab.on_create_labelframe('Steuerungspanel', 0, 0, 8, 10, 'N')

@@ -50,6 +50,7 @@ import java.util.List;
 *          https://stackoverflow.com/questions/41818963/mpandroidchart-v3-x-x-upgraded-from-2-x-x-labels
 *          http://shaoniiuc.com/android/android-line-chart-example/
 *          https://github.com/PhilJay/MPAndroidChart/wiki/Modifying-the-Viewport
+*          https://medium.com/@leelaprasad4648/creating-linechart-using-mpandroidchart-33632324886d
 * */
 public class MainActivity extends AppCompatActivity {
 //
@@ -151,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
     private void onCreateAndroidClientMQTT(){
 
         String clientID = "Android-PHONE-NEX05";
-        String server = "tcp://192.168.178.xx:1883";
+        String server = "tcp://192.168.178.20:1883";
 
         androidClient = new MqttAndroidClient(this.getApplicationContext(), server, clientID);
 

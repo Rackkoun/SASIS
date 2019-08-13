@@ -60,7 +60,7 @@ class MonitorringControl:
         self.model_ellipenv = EllipticEnv()
         self.model_lof = LocOuFac()
 
-        self.broker = "192.168.178.xx"  # wird an vergebene WLAN-IP-Adresse angepasst
+        self.broker = "192.168.178.20"  # wird an vergebene WLAN-IP-Adresse angepasst
         self.topic = "strom/bot"  # MQTT-Topic
         self.publisher = sasisMsg()  # MQTT-Klient erstellen
 
