@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
     private void onCreateAndroidClientMQTT(){
 
         String clientID = "Android-PHONE-NEX-05";
-        String server = "tcp://172.22.201.61:1883";
+        String server = "tcp://172.22.201.xx:1883";
 
         androidClient = new MqttAndroidClient(this.getApplicationContext(), server, clientID);
 
