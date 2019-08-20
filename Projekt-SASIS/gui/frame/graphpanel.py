@@ -60,7 +60,7 @@ class MonitorringControl:
         self.model_ellipenv = EllipticEnv()
         self.model_lof = LocOuFac()
 
-        self.broker = "192.168.178.20"  # wird an vergebene WLAN-IP-Adresse angepasst
+        self.broker = "172.22.201.xx"  # wird an vergebene WLAN-IP-Adresse angepasst
         self.topic = "strom/bot"  # MQTT-Topic
         self.publisher = sasisMsg()  # MQTT-Klient erstellen
 
@@ -590,7 +590,7 @@ class MonitorringControl:
         """
         if df['vorhersage'].values == -1:
             print("Outlier... ")
-            if df['strom'].values > 4019.59:
+            if df['strom'].values > 2019.59:
                 print("Zu warnen... ")
                 v = None
                 try:
@@ -601,8 +601,8 @@ class MonitorringControl:
                 except Exception as conerror:
                     print("Connection Error: ", conerror)
                     raise Exception('Connection not established: Value {} has not been sent'.format(v))
-            else:
-                print(" Wird ingnoriert...")
+        else:
+            print(" Wird ingnoriert...")
 
     def on_actualized_graph_up(self):
         print("Start TEXT: ", self.graph_btn['text'])
