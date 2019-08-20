@@ -1,5 +1,5 @@
 # SASIS
-Poject-SASIS: Simulation einer Außerordentlichen Situation In Stromverbrauch. 
+Project-SASIS: Simulation einer Außerordentlichen Situation In Stromverbrauch. 
 SASIS ist ein System, welches Stromverbräuche in verschiedenen Räumen einer Wohnung simuliert und dadurch ein Benutzer (virtueller Bewohner) über sein Verbrauchsverhalten warnt.
 Das Projekt ist in Python programmiert und hat auch ein internes Projekt für eine mobile-App (Android).
 
